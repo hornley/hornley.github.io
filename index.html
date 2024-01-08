@@ -1,33 +1,92 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
+<head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hornley</title>
+    <title>Simple Chess Game</title>
     <style>
         body {
             display: flex;
-            align-items: center;
             justify-content: center;
+            align-items: center;
             height: 100vh;
             margin: 0;
         }
 
-        h1 {
-            color: red;
+        #chessboard {
+            display: grid;
+            grid-template-columns: repeat(8, 50px);
+            grid-template-rows: repeat(8, 50px);
         }
 
-        .Title {
-            text-align: center;
+        .square {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .white {
+            background-color: #f0d9b5;
+        }
+
+        .black {
+            background-color: #b58863;
         }
     </style>
-  </head>
+</head>
+<body>
 
-  <body>
-    <div class="Title">
-        <h1>
-            Hornley
-        </h1>
-    </div>
-  </body>
+<div id="chessboard"></div>
+
+<script>
+    const chessboard = document.getElementById('chessboard');
+
+    // Create the chessboard
+    for (let row = 0; row < 8; row++) {
+        for (let col = 0; col < 8; col++) {
+            const square = document.createElement('div');
+            square.classList.add('square');
+            square.classList.add((row + col) % 2 === 0 ? 'white' : 'black');
+            square.dataset.row = row;
+            square.dataset.col = col;
+            chessboard.appendChild(square);
+        }
+    }
+
+    // Add pieces to the chessboard (for simplicity, only pawns)
+    const addPiece = (row, col, piece) => {
+        const square = chessboard.querySelector(`.square[data-row="${row}"][data-col="${col}"]`);
+        square.innerHTML = piece;
+    };
+
+    for (let col = 0; col < 8; col++) {
+        addPiece(1, col, '♙'); // White pawns
+        addPiece(6, col, '♟︎'); // Black pawns
+    }
+
+    // Add event listener for piece movement
+    let selectedPiece = null;
+
+    chessboard.addEventListener('click', (event) => {
+        const clickedSquare = event.target.closest('.square');
+        if (!clickedSquare) return;
+
+        const { row, col } = clickedSquare.dataset;
+
+        if (!selectedPiece) {
+            selectedPiece = { row, col };
+        } else {
+            const pieceToMove = chessboard.querySelector(`.square[data-row="${selectedPiece.row}"][data-col="${selectedPiece.col}"]`);
+            clickedSquare.innerHTML = pieceToMove.innerHTML;
+            pieceToMove.innerHTML = '';
+            selectedPiece = null;
+        }
+    });
+</script>
+
+</body>
 </html>
