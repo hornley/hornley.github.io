@@ -1,15 +1,45 @@
 body {
-    display: flex;
+    display: grid;
     align-items: center;
     justify-content: center;
     height: 100vh;
     margin: 0;
+    background-color: beige;
 }
 
-h1 {
+.PageTitle {
     color: red;
+    margin: auto;
+    padding: 10px;
+    font-size: 30px;
 }
 
-.Title {
-    text-align: center;
+div {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+}
+
+.projectform {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+}
+
+.Projects {
+    width: 180px;
+    height: 70px;
+    background-color: powderblue;
+}
+
+.SocialLinks {
+    background-color: powderblue;
+}
+
+a:visited {
+    color: black;
 }
