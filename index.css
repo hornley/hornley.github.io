@@ -14,16 +14,29 @@ body {
     font-size: 30px;
 }
 
-.TitleDiv {
-    text-align: center;
-}
-
-.SocialLinks {
+div {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
     justify-content: center;
     align-items: center;
+}
+
+.projectform {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+}
+
+.Projects {
+    width: 180px;
+    height: 70px;
+    background-color: powderblue;
+}
+
+.SocialLinks {
     background-color: powderblue;
 }
 

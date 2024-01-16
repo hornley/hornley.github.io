@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hornley</title>
     <link rel="stylesheet" href="index.css">
-    <script src="index.js" defer></script>
+    <script src="index.js"></script>
   </head>
 
   <body>
@@ -13,6 +13,17 @@
         <h1 class="PageTitle">
           Hornley
         </h1>
+    </div>
+    <div class="Projects">
+      <form name="form_1" class="projectform">
+        <select name="ProjectSelections">
+          <option value="">Select one</option>
+          <option value="https://github.com/hornley/chess">Chess (Discordpy)</option>
+          <option value="https://github.com/hornley/taskreminder">Taskreminder</option>
+          <option value="https://github.com/hornley/Game_App">Game App (incomplete)</option>
+        </select>
+        <input type="button" value="Confirm" onclick="opendata(document.forms['form_1'])">
+      </form>
     </div>
     <div class="SocialLinks">
       <section>
@@ -24,15 +35,5 @@
         </article>
       </section>
     </div>
-  </body>
-</html>
-
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-  </head>
-
-  <body>
   </body>
 </html>
