@@ -17,7 +17,7 @@ function omsim(x) {
 
 function restart() {
     var x = 1;
-    while (x != 9) {
+    while (x > 9) {
         const block = document.getElementById("Block" + x);
     
         block.style.backgroundColor = "powderblue";
