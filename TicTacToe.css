@@ -37,3 +37,18 @@ body {
     height: 75px;
     margin: 0;
 }
+
+.Restart {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    align-items: center;
+    margin: 50px;
+}
+
+.restartbutton {
+    border: 0;
+    background-color: beige;
+    font-size: 30px;
+    font-family: 'Times New Roman', Times, serif;
+}
