@@ -1,0 +1,39 @@
+body {
+    background-color: beige;
+}
+
+.PageTitle {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    color: brown;
+    margin: auto;
+    padding: 10px;
+    font-size: 30px;
+}
+
+.Box {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+}
+
+.TicTacToe {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    align-items: center;
+    width: 250px;
+    height: 250px;
+    background-color: black;
+}
+
+.Block {
+    background-color: powderblue;
+    width: 75px;
+    height: 75px;
+    margin: 0;
+}
