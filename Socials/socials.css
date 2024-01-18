@@ -5,60 +5,20 @@ body {
     background-color: beige;
 }
 
-div {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-}
-
-.PageTitle {
-    color: red;
-    margin: auto;
-    padding: 10px;
-    font-size: 50px;
-}
-
-.projectform {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-}
-
-.Projects {
-    width: 180px;
-    height: 70px;
-    background-color: powderblue;
-}
-
 .SocialLinks {
-    background-color: powderblue;
-    height: 100px;
-    width: 200px;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: last baseline;
+    height: 95vh;
+    width: 100vw;
 }
 
-.tictactoeButton {
-    font-family: 'Times New Roman', Times, serif;
-    font-size: 25px;
-    background-color: beige;
-    border: 0;
-}
-
-.TitleDiv {
-  display: flex;
-  flex-direction: column;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  height: 50vh;
-  width: 100vw;
-}
-
-.TitleDiv a {
-  font-size: 25px;
+img {
+    margin: 5px;
+    width: 75px;
+    height: 75px;
 }
 
 /* Projects Dropdown */

@@ -4,41 +4,33 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hornley (Home)</title>
+    <link rel="icon" type="image/x-icon" href="images/hornley-removebg-preview.ico">
     <link rel="stylesheet" href="index.css">
     <script src="index.js"></script>
   </head>
 
   <body>
+    <ul>
+      <li><a href="index.html" class="active">Home</a></li>
+      <li><a href="TicTacToe/TicTacToe.html">Tic Tac Toe</a></li>
+      <li class="dropdown">
+        <a href="javascript:void(0)" class="dropbtn">Projects</a>
+        <div class="dropdown-content">
+          <a href="https://github.com/hornley/chess" target="_blank">Chess (Discordpy)</a>
+          <a href="https://github.com/hornley/taskreminder" target="_blank">Taskreminder</a>
+          <a href="https://github.com/hornley/Game_App" target="_blank">Game App (incomplete)</a>
+        </div>
+      </li>
+      <li style="float: right"><a href="Socials/socials.html">Socials</a></li>
+    </ul>
+    
     <div class="TitleDiv">
-        <h1 class="PageTitle">
-          Hornley
-        </h1>
+      <h1 class="PageTitle">
+        Hornley
+      </h1>
+      <a href="/Socials/socials.html">Click me to go to my socials!</a>
     </div>
-    <div class="Projects">
-      <form name="form_1" class="projectform">
-        <select name="ProjectSelections">
-          <option value="">Select one</option>
-          <option value="https://github.com/hornley/chess">Chess (Discordpy)</option>
-          <option value="https://github.com/hornley/taskreminder">Taskreminder</option>
-          <option value="https://github.com/hornley/Game_App">Game App (incomplete)</option>
-        </select>
-        <input type="button" value="Confirm" onclick="opendata(document.forms['form_1'])">
-      </form>
-    </div>
-    <div class="TicTacToeGame">
-      <a href="TicTacToe.html">
-        <button class="tictactoeButton">Play Tic-Tac-Toe</button>
-      </a>
-    </div>
-    <div class="SocialLinks">
-      <section>
-        <article>
-          <a href="https://discord.com/users/341604307113738243" target="_blank">Discord Profile</a>
-        </article>
-        <article>
-          <a href="https://discord.com/invite/6QmeEDjWUm" target="_blank">Discord Server</a>
-        </article>
-      </section>
-    </div>
+
+
   </body>
 </html>
