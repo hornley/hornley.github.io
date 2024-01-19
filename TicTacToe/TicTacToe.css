@@ -56,6 +56,17 @@ body {
     font-family: 'Times New Roman', Times, serif;
 }
 
+.Winner {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+}
+
+.h1Winner {
+  font-size: 30px;
+}
+
 /* Projects Dropdown */
 
 ul {
