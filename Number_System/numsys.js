@@ -37,10 +37,10 @@ function convert() {
 
     if (base === 10) {
         let x = fromDecimal(number, to);
-        console.log(x);
+        document.getElementById("result").innerHTML = x;
     } else {
         let x = toDecimal(number, base, to);
-        console.log(x);
+        document.getElementById("result").innerHTML = x;
     }
 }
 
