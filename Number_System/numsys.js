@@ -34,8 +34,21 @@ function convert() {
         numbers[_[letter]] = _x;
         _x++;
     }
+    numbers['0'] = 0;
 
-    if (base === 10) {
+    for (let _ = 0; _ < number.length; _++) {
+        let currentNumber = (parseInt(number[_])) ? parseInt(number[_]) : numbers[number[_].toUpperCase()];
+        if (currentNumber > base - 1) {
+            window.alert("Your input base is invalid for this conversion.");
+            return;
+        }
+    }
+
+    if (number.length >= 12) {
+        document.getElementById("result").innerHTML = BigInt(number).toString(to).toUpperCase();
+    }
+
+    else if (base === 10) {
         let x = fromDecimal(number, to);
         document.getElementById("result").innerHTML = x;
     } else {
@@ -71,9 +84,10 @@ function toDecimal(number, base, to) {
     let result = 0;
 
     for (let i = length; i >= 0; i--) {
-        let currentNumber = (parseInt(number[_])) ? parseInt(number[_]) : numbers[_];
-        result = result + currentNumber * (base ** i);
+        let currentNumber = (parseInt(number[_])) ? parseInt(number[_]) : numbers[number[_].toUpperCase()];
+        result += (currentNumber * (base ** i));
         _++;
     }
+
     return (to === 10) ? result : fromDecimal(result, to);
 }
