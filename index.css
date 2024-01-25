@@ -10,17 +10,13 @@ div {
     color: red;
     margin: auto;
     padding: 10px;
-    font-size: 50px;
+    font-size: 12vmin;
 }
 
 .TitleDiv {
   flex-direction: column;
   height: 50vh;
   width: 100vw;
-}
-
-.TitleDiv a {
-  font-size: 25px;
 }
 
 /* Animations */
@@ -32,11 +28,11 @@ div {
 }
 
 @keyframes title {
-  0% {font-size: 30px;}
-  25% {font-size: 60px;}
-  50% {font-size: 90px;}
-  75% {font-size: 120px;}
-  100% {font-size: 150px;}
+  0% {font-size: 5vmin;}
+  25% {font-size: 8vmin;}
+  50% {font-size: 11vmin;}
+  75% {font-size: 14vmin;}
+  100% {font-size: 17vmin;}
 }
 
 body {
