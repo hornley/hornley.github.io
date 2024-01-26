@@ -2,7 +2,7 @@ const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
 let spawnLineY = 25;
-let spawnRate = 600000;
+let spawnRate = 1;
 let objects = [];
 let lastSpawn = -1;
 let startTime = Date.now();
@@ -49,6 +49,8 @@ function animate() {
     // clear the canvas so all objects can be 
     // redrawn in new positions
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "aliceblue";
+    ctx.fillRect(0,0,canvas.width, canvas.height);
 
     // draw the line where new objects are spawned
     ctx.beginPath();
@@ -61,7 +63,7 @@ function animate() {
         let object = objects[i];
         object.y += 0.5;
         ctx.beginPath();
-        ctx.arc(object.x, object.y, 8, 0, Math.PI * 2);
+        ctx.arc(object.x, object.y, 2, 0, Math.PI * 2);
         ctx.closePath();
         ctx.fillStyle = object.type;
         ctx.fill();
