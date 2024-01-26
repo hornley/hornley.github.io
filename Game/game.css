@@ -1,6 +1,14 @@
 #canvas {
-    position:absolute;
-    top: 200px;
-    left: 700px;
     border: 1px solid black;
+}
+
+.game {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
 }
