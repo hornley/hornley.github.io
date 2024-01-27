@@ -85,14 +85,6 @@ function animate() {
         canvas.x = e.offsetX;
         canvas.y = e.offsetY;
     })
-    canvas.addEventListener('mousedown', function (e) {
-        canvas.x = e.pageX;
-        canvas.y = e.pageY;
-    })
-    canvas.addEventListener('mouseup', function (e) {
-        canvas.x = false;
-        canvas.y = false;
-    })
     
     if (canvas.x && canvas.y) {
         player_object.x = canvas.x;
