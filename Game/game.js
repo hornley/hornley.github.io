@@ -5,7 +5,7 @@ canvas.y = canvas.height / 2;
 
 let doAnim = true;
 
-let speed = 5;
+let speed = 15;
 let enemySize = 5;
 let spawnRate = 1;
 
@@ -23,7 +23,29 @@ let player_object = {
     x: canvas.width / 2,
     y: canvas.height / 2,
     width: 50,
-    height: 50
+    height: 50,
+
+    crash: function() {
+        if (this.x - this.width / 2 < 0.0) {
+            this.x = this.width / 2;
+        }
+        if (this.x + this.width / 2 > canvas.width) {
+            this.x = canvas.width - this.width / 2;
+        }
+        if (this.y - this.height / 2 < 0.0) {
+            this.y = this.height / 2;
+        }
+        if (this.y + this.height / 2 > canvas.height) {
+            this.y = canvas.height - this.height / 2;
+        }
+    },
+
+    render: function() {
+        this.crash();
+        ctx.beginPath();
+        ctx.rect(player_object.x - player_object.width / 2, player_object.y - player_object.height / 2, player_object.width, player_object.height);
+        ctx.stroke();
+    }
 }
 let bullet = {
     x: player_object.x,
@@ -61,7 +83,24 @@ let bullet = {
     }
 }
 
-animate();
+let myGame = {
+    canvas: document.getElementById("canvas"),
+    start: function() {
+        this.canvas.width = 1200;
+        this.canvas.height = 650;
+        this.context = this.canvas.getContext("2d");
+        this.canvas.x = canvas.width / 2;
+        this.canvas.y = canvas.height / 2;
+        // this.interval = setInterval(updateGame, 1);
+        updateGame();
+    },
+    clear: function() {
+        this.context.clearRect(0, 0, canvas.width, canvas.height);
+        this.context.fillStyle = "aliceblue";
+        this.context.fillRect(0,0,canvas.width, canvas.height);
+    }
+}
+
 canvas.addEventListener('mousemove', function (e) {
     mouseX = e.offsetX;
     mouseY = e.offsetY;
@@ -100,6 +139,10 @@ window.addEventListener('keyup', function (e) {
     }
 })
 
+function startGame() {
+    myGame.start();
+}
+
 function spawnRandomObject() {
     let t;
 
@@ -115,7 +158,6 @@ function spawnRandomObject() {
         y: 0,
 
         collide: function(object) {
-            console.log(object.x, object.y, this.x, this.y);
             let myleft = this.x - 1;
             let myright = this.x + 1;
             let mytop = this.y - 1;
@@ -143,7 +185,7 @@ function spawnRandomObject() {
 }
 
 function gameOver() {
-    requestAnimationFrame(animate);
+    requestAnimationFrame(updateGame);
     ctx.fillStyle = "darkcyan";
     ctx.strokeStyle = "black";
 
@@ -155,7 +197,7 @@ function gameOver() {
     ctx = null;
 }
 
-function animate() {
+function updateGame() {
     if (!doAnim) { gameOver(); return; }
     let time = Date.now();
 
@@ -166,24 +208,10 @@ function animate() {
     }
 
     // request another animation frame
-    requestAnimationFrame(animate);
-    ctx.fillStyle = "darkcyan";
-    ctx.strokeStyle = "black";
+    requestAnimationFrame(updateGame);
+    myGame.clear();
 
-    // clear the canvas so all objects can be 
-    // redrawn in new positions
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "aliceblue";
-    ctx.fillRect(0,0,canvas.width, canvas.height);
-
-    if (canvas.x && canvas.y) {
-        player_object.x = canvas.x;
-        player_object.y = canvas.y;
-    }
-    ctx.beginPath();
-    ctx.rect(player_object.x - player_object.width / 2, player_object.y - player_object.height / 2, player_object.width, player_object.height);
-    ctx.stroke();
-
+    player_object.render();
     bullet.tick();
     bullet.render();
 
@@ -207,10 +235,6 @@ function animate() {
     }
 }
 
-function shoot() {
-
-}
-
 function move(e) {
     keypresses = (keypresses || []);
     key = e.key;
@@ -218,35 +242,35 @@ function move(e) {
     if (!keypresses[key]) { return; }
 
     if (keypresses["w"] && keypresses["a"]) {
-        canvas.x -= speed;
-        canvas.y -= speed;
+        player_object.x -= speed;
+        player_object.y -= speed;
         double = true;
     }
     if (keypresses["w"] && keypresses["d"]) {
-        canvas.x += speed;
-        canvas.y -= speed;
+        player_object.x += speed;
+        player_object.y -= speed;
         double = true;
     }
     if (keypresses["s"] && keypresses["a"]) {
-        canvas.x -= speed;
-        canvas.y += speed;
+        player_object.x -= speed;
+        player_object.y += speed;
         double = true;
     }
     if (keypresses["s"] && keypresses["d"]) {
-        canvas.x += speed;
-        canvas.y += speed;
+        player_object.x += speed;
+        player_object.y += speed;
         double = true;
     }
 
     if (!double){
         if (keypresses["w"]) { 
-            canvas.y -= speed;
+            player_object.y -= speed;
         } else if (keypresses["a"]) {
-            canvas.x -= speed;
+            player_object.x -= speed;
         } else if (keypresses["s"]) {
-            canvas.y += speed;
+            player_object.y += speed;
         } else if (keypresses["d"]) {
-            canvas.x += speed;
+            player_object.x += speed;
         }
     }
 }

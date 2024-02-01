@@ -8,7 +8,7 @@
         <link rel="stylesheet" href="game.css">
         <link rel="stylesheet" href="../styles.css">
     </head>
-    <body>
+    <body onload="startGame()">
         <ul>
           <li><a href="../index.html"">Home</a></li>
           <li><a href="../TicTacToe/TicTacToe.html">Tic Tac Toe</a></li>
@@ -27,7 +27,8 @@
         </ul>
 
         <div class="game">
-          <canvas id="canvas" width="1200" height="650" onmousedown="shoot()"></canvas>
+          <div class="Restart_Prompt"></div>
+          <canvas id="canvas" width="1200" height="650"></canvas>
           <script src="game.js"></script>
         </div>
     </body>
