@@ -45,6 +45,8 @@ let myGame = {
     }
 };
 
+startGame();
+
 function startGame() {
     myGame.start();
 }
