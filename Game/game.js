@@ -1,56 +1,3 @@
-let myGame = {
-    canvas: document.getElementById("canvas"),
-    start: function() {
-        this.canvas.width = 1200;
-        this.canvas.height = 650;
-        this.context = this.canvas.getContext("2d");
-        this.canvas.addEventListener('mousemove', function(e) {
-            mouseX = e.offsetX;
-            mouseY = e.offsetY;
-        });
-
-        this.canvas.addEventListener('mousedown', function(e) {
-            player_object.shoot();
-        });
-        updateGame();
-    },
-    clear: function() {
-        if (this.context === null) { return; }
-        requestAnimationFrame(updateGame);
-        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.context.fillStyle = "aliceblue";
-        this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
-        this.context.strokeStyle = "black";
-        this.context.beginPath();
-        this.context.rect(safeAreaWidth, safeAreaHeight, this.canvas.width - safeAreaWidth * 2, safeAreaHeight * 2 - player_object.height);
-        this.context.stroke();
-    },
-    restart: function() {
-        restartDIV.style.opacity = 0;
-        restartDIV.style.top = "100%";
-        ongoingGame = true;
-        player_object.health = 100;
-        player_object.x = myGame.canvas.width / 2;
-        player_object.y = myGame.canvas.height / 2;
-        this.context = this.canvas.getContext("2d");
-        updateGame();
-    },
-    end: function() {
-        restartDIV.style.opacity = 1;
-        restartDIV.style.top = "25%";
-        objects = [];
-        bullets = [];
-        this.clear();
-        this.context = null;
-    }
-};
-
-startGame();
-
-function startGame() {
-    myGame.start();
-}
-
 const moves = ['w', 'a', 's', 'd'];
 let bulletSize = 25;
 let speed = 15;
@@ -149,6 +96,59 @@ window.addEventListener('keyup', function(e) {
         double = false;
     }
 });
+
+let myGame = {
+    canvas: document.getElementById("canvas"),
+    start: function() {
+        this.canvas.width = 1200;
+        this.canvas.height = 650;
+        this.context = this.canvas.getContext("2d");
+        this.canvas.addEventListener('mousemove', function(e) {
+            mouseX = e.offsetX;
+            mouseY = e.offsetY;
+        });
+
+        this.canvas.addEventListener('mousedown', function(e) {
+            player_object.shoot();
+        });
+        updateGame();
+    },
+    clear: function() {
+        if (this.context === null) { return; }
+        requestAnimationFrame(updateGame);
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.context.fillStyle = "aliceblue";
+        this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        this.context.strokeStyle = "black";
+        this.context.beginPath();
+        this.context.rect(safeAreaWidth, safeAreaHeight, this.canvas.width - safeAreaWidth * 2, safeAreaHeight * 2 - player_object.height);
+        this.context.stroke();
+    },
+    restart: function() {
+        restartDIV.style.opacity = 0;
+        restartDIV.style.top = "100%";
+        ongoingGame = true;
+        player_object.health = 100;
+        player_object.x = myGame.canvas.width / 2;
+        player_object.y = myGame.canvas.height / 2;
+        this.context = this.canvas.getContext("2d");
+        updateGame();
+    },
+    end: function() {
+        restartDIV.style.opacity = 1;
+        restartDIV.style.top = "25%";
+        objects = [];
+        bullets = [];
+        this.clear();
+        this.context = null;
+    }
+};
+
+startGame();
+
+function startGame() {
+    myGame.start();
+}
 
 function spawnRandomObject() {
     let t = Math.random() < 0.50 ? "red" : "blue";
