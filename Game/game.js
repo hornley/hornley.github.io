@@ -14,6 +14,7 @@ let bullets = [];
 let lastSpawn = -1;
 let keypresses;
 let restartDIV = document.getElementById("RestartPrompt");
+let myGame;
 
 let player_object = {
     health: 100,
@@ -97,7 +98,7 @@ window.addEventListener('keyup', function(e) {
     }
 });
 
-let myGame = {
+myGame = {
     canvas: document.getElementById("canvas"),
     start: function() {
         this.canvas.width = 1200;
