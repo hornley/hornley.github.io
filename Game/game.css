@@ -1,5 +1,6 @@
 #canvas {
     border: 1px solid black;
+    border-radius: 2%;
 }
 
 .game {
@@ -11,4 +12,27 @@
     padding: 0;
     width: 100vw;
     height: 90vh;
+}
+
+.RestartPrompt {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: 100%;
+    width: 500px;
+    height: 300px;
+    border: 1px solid black;
+    border-radius: 5%;
+    opacity: 0;
+}
+
+.RestartPrompt input {
+    font-size: 25px;
+    font-family: 'Times New Roman', Times, serif;
+    background-color: skyblue;
+    border: 0;
+    border-radius: 25%;
+    width: 100px;
 }
