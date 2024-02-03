@@ -1,10 +1,10 @@
+import { player, bullet, restart, safeAreaHeight, safeAreaWidth } from "./entity.js";
+
 const moves = ['w', 'a', 's', 'd'];
-let bulletSize = 25;
 let speed = 5;
 let enemySize = 5;
-let spawnRate = 1;
-const safeAreaWidth = 200;
-const safeAreaHeight = 175;
+let spawnRate = 10000;
+let enemySpeed = 0.5;
 
 let score = 0;
 let mouseX = 0.0;
@@ -14,7 +14,7 @@ let objects = [];
 let bullets = [];
 let lastSpawn = -1;
 let keypresses;
-let restartDIV = document.getElementById("RestartPrompt");
+let player_object;
 let myGame = {
     canvas: document.getElementById("canvas"),
     start: function() {
@@ -27,7 +27,7 @@ let myGame = {
         });
 
         this.canvas.addEventListener('mousedown', function(e) {
-            player_object.shoot();
+            player_object.shoot(mouseX, mouseY, bullets);
         });
         updateGame();
     },
@@ -43,8 +43,6 @@ let myGame = {
     },
     restart: function() {
         score = 0;
-        restartDIV.style.opacity = 0;
-        restartDIV.style.top = "100%";
         ongoingGame = true;
         player_object.health = 100;
         player_object.x = myGame.canvas.width / 2;
@@ -53,124 +51,51 @@ let myGame = {
         updateGame();
     },
     end: function() {
-        restartDIV.style.opacity = 1;
-        restartDIV.style.backgroundColor = "rgba(18, 52, 19, 0.4)";
-        restartDIV.style.top = "25%";
+        restart(document, myGame);
         objects = [];
         bullets = [];
         this.context = null;
     },
     updateTexts: function() {
-        this.context.clearRect(0, 0, 160, 55);
+        this.context.clearRect(0, 0, 180, 55);
         this.context.fillStyle = "aliceblue";
-        this.context.fillRect(0, 0, 160, 55);
+        this.context.fillRect(0, 0, 180, 55);
         this.context.font = "24px serif";
         this.context.direction = "ltr";
         this.context.fillStyle = "black";
-        let hp_message = "Health: " + player_object.health + "/" + player_object.max_health;
+        let hp_message = "Health = " + player_object.health + "/" + player_object.max_health;
         this.context.fillText(hp_message, 10, 25);
-        let score_message = "Score: " + score;
+        let score_message = "Score = " + score;
         this.context.fillText(score_message, 10, 50);
     }
 };
 
-let player_object = {
-    health: 100,
-    max_health: 100,
-    type: "black",
-    x: myGame.canvas.width / 2,
-    y: myGame.canvas.height / 2,
-    width: 50,
-    height: 50,
-
-    crash: function() {
-        this.x = Math.max(this.width / 2, Math.min(myGame.canvas.width - this.width / 2, this.x));
-        this.y = Math.max(this.height / 2, Math.min(myGame.canvas.height - this.height / 2, this.y));
-    },
-
-    render: function() {
-        this.crash();
-        myGame.context.fillStyle = "honeydew";
-        myGame.context.strokeStyle = "black";
-        myGame.context.beginPath();
-        myGame.context.roundRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height, 5);
-        myGame.context.fill();
-        myGame.context.stroke();
-    },
-
-    shoot: function() {
-        const x = mouseX - player_object.x;
-        const y = mouseY - player_object.y;
-        const l = Math.sqrt(x * x + y * y);
-
-        const dx = (x / l) * 10;
-        const dy = (y / l) * 10;
-        bullets.push(new bullet(player_object.x, player_object.y, dx, dy));
-    }
-};
-
-class bullet {
-    constructor(x, y, dx, dy) {
-        this.health = 100;
-        this.x = x;
-        this.y = y;
-        this.dx = dx;
-        this.dy = dy;
-        this.width = bulletSize;
-        this.height = bulletSize;
-    }
-
-    tick() {
-        this.x += this.dx;
-        this.y += this.dy;
-
-        const outOfBounds = (
-            this.x + this.width < 0 ||
-            this.x - this.width > myGame.canvas.width ||
-            this.y + this.height < 0 ||
-            this.y - this.height > myGame.canvas.height
-        );
-
-        return outOfBounds;
-    }
-
-    render() {
-        myGame.context.strokeStyle = "black";
-        myGame.context.fillStyle = "red";
-        myGame.context.beginPath();
-        myGame.context.roundRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height, [50, 50, 50, 50]);
-        myGame.context.fill();
-        myGame.context.stroke();
-    }
-};
-
-
-window.addEventListener('keydown', function(e) {
-    if (moves.includes(e.key)) {
-        keypresses[e.key] = true;
-    }
-});
-
-window.addEventListener('keyup', function(e) {
-    if (moves.includes(e.key)) {
-        keypresses[e.key] = false;
-        double = false;
-    }
-});
+startGame();
 
 function startGame() {
+    window.addEventListener('keydown', function(e) {
+        if (moves.includes(e.key)) {
+            keypresses[e.key] = true;
+        }
+    });
+    
+    window.addEventListener('keyup', function(e) {
+        if (moves.includes(e.key)) {
+            keypresses[e.key] = false;
+        }
+    });
+    player_object = new player(myGame);
     myGame.start();
 }
 
-startGame();
-
-function spawnRandomObject() {
+function spawnEnemy() {
     let t = Math.random() < 0.50 ? "red" : "blue";
 
-    let object = {
+    let enemy = {
         type: t,
         x: Math.random() * (myGame.canvas.width - 30) + 2,
         y: Math.random() * (myGame.canvas.height - 30) + 2,
+        hp: 10,
 
         collide: function(object) {
             let myleft = this.x - 1;
@@ -203,27 +128,20 @@ function spawnRandomObject() {
             const y = this.y - player_object.y;
             const l = Math.sqrt(x * x + y * y);
     
-            const dx = (x / l) * 1;
-            const dy = (y / l) * 1;
+            const dx = (x / l) * enemySpeed;
+            const dy = (y / l) * enemySpeed;
             this.x += -dx;
             this.y += -dy;
         }
     };
 
-    if (object.x >= player_object.x - safeAreaWidth / 2 &&
-        object.x <= player_object.x + safeAreaWidth / 2 &&
-        object.y >= player_object.y - safeAreaHeight / 2 &&
-        object.y <= player_object.y + safeAreaHeight / 2) {
+    if (enemy.x >= player_object.x - safeAreaWidth / 2 &&
+        enemy.x <= player_object.x + safeAreaWidth / 2 &&
+        enemy.y >= player_object.y - safeAreaHeight / 2 &&
+        enemy.y <= player_object.y + safeAreaHeight / 2) {
     } else {
-        objects.push(object);
+        objects.push(enemy);
     }
-}
-
-function restartGame() {
-    if (ongoingGame) {
-        return;
-    }
-    myGame.restart();
 }
 
 function updateGame() {
@@ -236,7 +154,7 @@ function updateGame() {
     // see if it's time to spawn a new object
     if (time > (lastSpawn + spawnRate)) {
         lastSpawn = time;
-        spawnRandomObject();
+        spawnEnemy();
     }
 
     // request another animation frame
@@ -255,7 +173,7 @@ function updateGame() {
 
     for (let i = 0; i < objects.length; i++) {
         let object = objects[i];
-        object.followPlayer();
+        // object.followPlayer();
         
         bullets.forEach((bullet) => {
             if (object.collide(bullet) || object.crash()) {
@@ -265,6 +183,12 @@ function updateGame() {
         })
 
         object.render();
+        player_object.AoE(object, time);
+
+        if (object.hp <= 0) {
+            objects.splice(i, 1);
+            score++;
+        }
 
         if (object.collide(player_object)) {
             player_object.health -= 20;
