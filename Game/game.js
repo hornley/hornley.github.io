@@ -1,6 +1,6 @@
 const moves = ['w', 'a', 's', 'd'];
 let bulletSize = 25;
-let speed = 5a;
+let speed = 5;
 let enemySize = 5;
 let spawnRate = 1;
 const safeAreaWidth = 200;
