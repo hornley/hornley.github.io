@@ -1,11 +1,12 @@
 const moves = ['w', 'a', 's', 'd'];
 let bulletSize = 25;
-let speed = 15;
+let speed = 5a;
 let enemySize = 5;
-let spawnRate = 150;
-const safeAreaWidth = 400;
+let spawnRate = 1;
+const safeAreaWidth = 200;
 const safeAreaHeight = 175;
 
+let score = 0;
 let mouseX = 0.0;
 let mouseY = 0.0;
 let ongoingGame = true;
@@ -31,17 +32,17 @@ let myGame = {
         updateGame();
     },
     clear: function() {
-        if (this.context === null) { return; }
         requestAnimationFrame(updateGame);
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.context.fillStyle = "aliceblue";
         this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
         this.context.strokeStyle = "black";
         this.context.beginPath();
-        this.context.rect(safeAreaWidth, safeAreaHeight, this.canvas.width - safeAreaWidth * 2, safeAreaHeight * 2 - player_object.height);
+        this.context.roundRect(player_object.x - safeAreaWidth / 2, player_object.y - safeAreaHeight / 2, safeAreaWidth, safeAreaHeight, 15);
         this.context.stroke();
     },
     restart: function() {
+        score = 0;
         restartDIV.style.opacity = 0;
         restartDIV.style.top = "100%";
         ongoingGame = true;
@@ -53,16 +54,29 @@ let myGame = {
     },
     end: function() {
         restartDIV.style.opacity = 1;
+        restartDIV.style.backgroundColor = "rgba(18, 52, 19, 0.4)";
         restartDIV.style.top = "25%";
         objects = [];
         bullets = [];
-        this.clear();
         this.context = null;
+    },
+    updateTexts: function() {
+        this.context.clearRect(0, 0, 160, 55);
+        this.context.fillStyle = "aliceblue";
+        this.context.fillRect(0, 0, 160, 55);
+        this.context.font = "24px serif";
+        this.context.direction = "ltr";
+        this.context.fillStyle = "black";
+        let hp_message = "Health: " + player_object.health + "/" + player_object.max_health;
+        this.context.fillText(hp_message, 10, 25);
+        let score_message = "Score: " + score;
+        this.context.fillText(score_message, 10, 50);
     }
 };
 
 let player_object = {
     health: 100,
+    max_health: 100,
     type: "black",
     x: myGame.canvas.width / 2,
     y: myGame.canvas.height / 2,
@@ -97,6 +111,7 @@ let player_object = {
 
 class bullet {
     constructor(x, y, dx, dy) {
+        this.health = 100;
         this.x = x;
         this.y = y;
         this.dx = dx;
@@ -132,7 +147,7 @@ class bullet {
 
 window.addEventListener('keydown', function(e) {
     if (moves.includes(e.key)) {
-        move(e);
+        keypresses[e.key] = true;
     }
 });
 
@@ -176,19 +191,11 @@ function spawnRandomObject() {
         },
 
         render: function() {
-            if (this.x >= safeAreaWidth &&
-                this.x <= myGame.canvas.width - safeAreaWidth &&
-                this.y >= safeAreaHeight &&
-                this.y <= myGame.canvas.height - safeAreaHeight) 
-                {
-                return false;
-                }
             myGame.context.beginPath();
             myGame.context.arc(this.x, this.y, enemySize, 0, Math.PI * 2);
             myGame.context.closePath();
             myGame.context.fillStyle = this.type;
             myGame.context.fill();
-            return true;
         },
 
         followPlayer: function() {
@@ -203,7 +210,13 @@ function spawnRandomObject() {
         }
     };
 
-    objects.push(object);
+    if (object.x >= player_object.x - safeAreaWidth / 2 &&
+        object.x <= player_object.x + safeAreaWidth / 2 &&
+        object.y >= player_object.y - safeAreaHeight / 2 &&
+        object.y <= player_object.y + safeAreaHeight / 2) {
+    } else {
+        objects.push(object);
+    }
 }
 
 function restartGame() {
@@ -228,6 +241,7 @@ function updateGame() {
 
     // request another animation frame
     myGame.clear();
+    move();
     player_object.render();
 
     for (let i = 0; i < bullets.length; i++) {
@@ -242,35 +256,29 @@ function updateGame() {
     for (let i = 0; i < objects.length; i++) {
         let object = objects[i];
         object.followPlayer();
-        if (!object.render()) {
-            objects.splice(i, 1);
-            continue;
-        }
         
         bullets.forEach((bullet) => {
             if (object.collide(bullet) || object.crash()) {
                 objects.splice(i, 1);
+                score++;
             }
         })
-        // Game Over
-        if (object.collide(player_object)) {
-            ongoingGame = false;
-            break;
-        }
-
 
         object.render();
+
+        if (object.collide(player_object)) {
+            player_object.health -= 20;
+            objects.splice(i, 1);
+            if (player_object.health <= 0) {
+                ongoingGame = false;
+            }
+        }
+        myGame.updateTexts();
     }
 }
 
-function move(e) {
+function move() {
     keypresses = keypresses || [];
-    key = e.key;
-    keypresses[key] = true;
-
-    if (!keypresses[key]) {
-        return;
-    }
 
     const directions = { w: 0, a: 0, s: 0, d: 0 };
     const diagonal = keypresses.filter((key) => directions[key]).length === 2;
