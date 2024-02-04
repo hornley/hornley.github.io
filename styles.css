@@ -23,9 +23,9 @@ body {
   float: left;
   color: #f2f2f2;
   text-align: center;
-  padding: 2vmin 3vmin;
+  padding: 1vmin 2vmin;
   text-decoration: none;
-  font-size: 3.5vmin;
+  font-size: 2vmin;
 }
 
 .topnav a:not(.icon) {
@@ -44,8 +44,8 @@ body {
     background-color: #04AA6D;
 }
 
-@media screen and (max-width: 1080px) {
-  .topnav a:not(:first-child) {
+@media screen and (max-width: 500px) {
+  .topnav a:not(:first-child, .active) {
     display: none;
   }
   .topnav a.icon {
@@ -54,7 +54,7 @@ body {
   }
 }
 
-@media screen and (max-width: 1080px) {
+@media screen and (max-width: 500px) {
   .topnav.responsive {position: relative;}
   .topnav.responsive a.icon {
     position: absolute;
