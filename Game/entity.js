@@ -1,9 +1,6 @@
-let bulletSize = 25; // ***
+import { aoe, aoeTime, bulletSize, safeAreaHeight, safeAreaWidth } from "./game.js";
+
 let lastTime = -1;
-let aoe = false; // ***
-let aoeTime = 250; // ***
-let safeAreaWidth = 200; // ***
-let safeAreaHeight = 200; // ***
 
 class Player {
     constructor(game) {
@@ -33,6 +30,7 @@ class Player {
     };
 
     shoot(mouseX, mouseY, bullets) {
+        if (bulletSize === 0) { return; }
         const x = mouseX - this.x;
         const y = mouseY - this.y;
         const l = Math.sqrt(x * x + y * y);
@@ -40,7 +38,6 @@ class Player {
         const dx = (x / l) * 10;
         const dy = (y / l) * 10;
         bullets.push(new Bullet(this.x, this.y, dx, dy, this.game, bulletSize));
-        console.log(bullets);
     };
 
     AoE(time, enemies) {
@@ -151,16 +148,16 @@ class Enemy {
 };
 
 class Button {
-    constructor(x, y, fillStyle, textColor, text, width, height, game, id) {
+    constructor(x, y, fillStyle, textColor, width, height, ctx, id, text=null) {
         this.id = id;
         this.x = x;
         this.y = y;
         this.fillStyle = fillStyle;
         this.textColor = textColor;
-        this.text = text;
         this.width = width;
         this.height = height;
-        this.ctx = game.context;
+        this.ctx = ctx;
+        this.text = text;
     };
 
     render() {
@@ -168,20 +165,31 @@ class Button {
         this.ctx.beginPath();
         this.ctx.roundRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height, 10);
         this.ctx.fill();
+        if (this.text) { 
+            const text = new Text(this.x, this.y, this.text, this.width, this.ctx);
+            text.render();
+        }
     };
 
-    onClick(mouseX, mouseY, func) {
-        if (this.x >= mouseX - this.width / 2 &&
+    changeSize(width, height) {
+        this.width = width;
+        this.height = height;
+    };
+
+    changeText(text) {
+        this.text = text;
+    };
+
+    onClick(mouseX, mouseY) {
+        return (this.x >= mouseX - this.width / 2 &&
         this.x <= mouseX + this.width / 2 &&
         this.y >= mouseY - this.height / 2 &&
-        this.y <= mouseY + this.height / 2) {
-            func();
-        };
+        this.y <= mouseY + this.height / 2);
     };
 };
 
 class Text {
-    constructor(x, y, text, maxWidth, game, font='25px times-new-roman', textColor='black', textAlign='center', textBaseline='middle') {
+    constructor(x, y, text, maxWidth, ctx, font='25px times-new-roman', textColor='black', textAlign='center', textBaseline='middle') {
         this.x = x;
         this.y = y;
         this.text = text;
@@ -190,7 +198,7 @@ class Text {
         this.textBaseline = textBaseline;
         this.maxWidth = maxWidth;
         this.font = font;
-        this.ctx = game.context;
+        this.ctx = ctx;
     };
 
     render() {
@@ -202,7 +210,7 @@ class Text {
     }
 };
 
-function restart(myGame, id) {
+function restart(myGame) {
     const ctx = myGame.context;
     const restartWidth = 350;
     const restartHeight = 300;
@@ -210,20 +218,51 @@ function restart(myGame, id) {
     const x = myGame.canvas.width / 2;
     const y = myGame.canvas.height / 2;
 
-    ctx.fillStyle = 'rgba(199, 12, 115, 0.6)';
+    ctx.fillStyle = 'rgba(119, 161, 161, 1)';
     ctx.strokeStyle = 'black';
     ctx.roundRect(x - restartWidth / 2, y - restartHeight / 2 - restartTop, restartWidth, restartHeight, 15);
     ctx.fill();
 
-    const restartText = new Text(x, y - restartTop * 1.2, "Press the button below to restart", 300, myGame, "30px times-new-roman");
+    const restartText = new Text(x, y - restartTop * 1.2, "Press the button below to restart", 300, ctx, "30px times-new-roman");
     restartText.render();
 
-    const restartButton = new Button(x, y - restartTop / 2, 'rgba(135, 206, 235, 1)', 'black', "Restart", 100, 50, myGame, id);
-    const restartButtonText = new Text(x, y - restartTop / 2, "Restart", 100, myGame);
+    const restartButton = new Button(x, y - restartTop / 2, 'rgba(135, 206, 235, 1)', 'black', 100, 50, ctx, 'RESTART', "Restart");
     restartButton.render();
-    restartButtonText.render();
 
     return restartButton;
+}
+
+function menu(myGame) {
+    const ctx = myGame.context;
+    const startTop = 75;
+    const difficultyTop = 15;
+    const settingsTop = 135;
+    const x = myGame.canvas.width / 2;
+    const y = myGame.canvas.height / 2;
+
+    const startButton = new Button(x, y + startTop, 'rgb(57, 202, 202)', 'black', 90, 45, ctx, 'START', 'Start');
+    const difficultyButton = new Button(x, y + difficultyTop, 'rgb(57, 202, 202)', 'black', 90, 45, ctx, 'DIFFICULTY', 'Easy');
+    const settingsButton = new Button(x, y + settingsTop, 'rgb(57, 202, 202)', 'black', 120, 45, ctx, 'SETTINGS', 'Settings');
+    settingsButton.render();
+    startButton.render();
+    difficultyButton.render();
+
+    const gameTitle = new Text(x, y - 125, "Bugs War", 500, ctx, '75px times-new-roman');
+    gameTitle.render();
+    const gameVersion = new Text(x * 2 - 85, y * 2 - 17, "Version: 0.1.0-alpha", 150, ctx, '20px times-new-roman');
+    gameVersion.render();
+
+    return [startButton, difficultyButton, settingsButton];
+}
+
+function settings(myGame) {
+    const ctx = myGame.context;
+    const settingsWidth = 350;
+    const settingsHeight = 300;
+    const settingsTop = 135;
+    const x = myGame.canvas.width / 2;
+    const y = myGame.canvas.height / 2;
+
 }
 
 export {
@@ -232,6 +271,6 @@ export {
     Bullet,
     Player,
     restart,
-    safeAreaWidth,
-    safeAreaHeight
+    menu,
+    settings
 };

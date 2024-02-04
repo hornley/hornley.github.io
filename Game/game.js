@@ -1,10 +1,18 @@
-import { Enemy, Button, Player, restart, safeAreaHeight, safeAreaWidth } from "./entity.js";
+import { Enemy, Button, Player, restart, menu, settings } from "./entity.js";
 
 const moves = ['w', 'a', 's', 'd'];
-let speed = 5; // ***
-let enemySize = 5; // ***
-let spawnRate = 1; // ***
+const difficulties = {'Easy': 1, 'Medium': 2, 'Hard': 3, ':)': 4, 'Dodge Only': 5};
+let speed = 5; // ***^
+let enemySize = 5; // ***^
+let aoeTime = 250; // ***^
+let aoe = true; // ***
+let spawnRate = 250; // ***
 let enemySpeed = 0.5; // ***
+let enemyHealth = 2; // ***
+let enemyCollisionDamage = 5; // ***
+let bulletSize = 25; // ***
+let safeAreaWidth = 200; // ***
+let safeAreaHeight = 200; // ***
 
 let score = 0;
 let mouseX = 0.0;
@@ -16,28 +24,46 @@ let buttons = [];
 let lastSpawn = -1;
 let keypresses;
 let player_object;
-let myGame = {
+let gameDifficulty;
+let game = {
     canvas: document.getElementById("canvas"),
-    start: function() {
-        this.canvas.width = 1200;
-        this.canvas.height = 800;
+    menu: function() {
+        this.canvas.style.width = '70%';
+        this.canvas.style.height = '80%';
+        this.canvas.width = this.canvas.offsetWidth;
+        this.canvas.height = this.canvas.offsetHeight;
         this.context = this.canvas.getContext("2d");
-        this.canvas.addEventListener('mousemove', function(e) {
-            mouseX = e.offsetX;
-            mouseY = e.offsetY;
-        });
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.context.fillStyle = 'rgba(30, 178, 54, 0.9)';
+        this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-        this.canvas.addEventListener('mousedown', function(e) {
-            if (ongoingGame) {
-                player_object.shoot(mouseX, mouseY, bullets);
-            };
-            buttons.forEach((button) => {
-                if (button.id === 'RESTART') {
-                    button.onClick(mouseX, mouseY, myGame.restart());
-                }
-            });
+        const menuButtons = menu(game);
+        buttons.push(menuButtons[0], menuButtons[1], menuButtons[2]);
+
+        eventListener(game);
+    },
+    start: function() {
+        window.addEventListener('keydown', function(e) {
+            if (moves.includes(e.key)) {
+                keypresses[e.key] = true;
+            }
         });
+        
+        window.addEventListener('keyup', function(e) {
+            if (moves.includes(e.key)) {
+                keypresses[e.key] = false;
+            }
+        });
+        player_object = new Player(game);
+        buttons = [];
         updateGame();
+    },
+    settings: function() {
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.context.fillStyle = 'rgba(30, 178, 54, 0.9)';
+        this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+
     },
     clear: function() {
         requestAnimationFrame(updateGame);
@@ -54,12 +80,12 @@ let myGame = {
         lastSpawn = -1;
         score = 0;
         ongoingGame = true;
-        player_object = new Player(myGame);
+        player_object = new Player(game);
         this.context = this.canvas.getContext("2d");
         updateGame();
     },
     end: function() {
-        buttons.push(restart(myGame, 'RESTART'));
+        buttons.push(restart(game));
         enemies = [];
         bullets = [];
         this.context = null;
@@ -79,42 +105,34 @@ let myGame = {
     }
 };
 
-startGame();
+launch();
 
-function startGame() {
-    window.addEventListener('keydown', function(e) {
-        if (moves.includes(e.key)) {
-            keypresses[e.key] = true;
-        }
-    });
-    
-    window.addEventListener('keyup', function(e) {
-        if (moves.includes(e.key)) {
-            keypresses[e.key] = false;
-        }
-    });
-    player_object = new Player(myGame);
-    myGame.start();
+function launch() {
+    game.menu();
 }
 
 function spawnEnemy(time) {
     if (time <= (lastSpawn + spawnRate)) { return; }
 
+    if (gameDifficulty === 'Dodge Only') {
+        score += 5;
+    }
+
     lastSpawn = time;
     let t = Math.random() < 0.50 ? "red" : "blue";
-    let enemy = new Enemy(t, 1, enemySpeed, enemySize, myGame);
+    let enemy = new Enemy(t, enemyHealth, enemySpeed, enemySize, game);
     (!enemy.withinSafeArea(player_object)) ? enemies.push(enemy) : '';
 }
 
 function updateGame() {
     if (!ongoingGame) {
-        myGame.end();
+        game.end();
         return;
     }
     let time = Date.now();
     spawnEnemy(time);    
 
-    myGame.clear();
+    game.clear();
     move();
     player_object.render();
     enemies = player_object.AoE(time, enemies);
@@ -144,13 +162,13 @@ function updateGame() {
         enemy.render();
 
         if (enemy.collide(player_object)) {
-            player_object.health -= 100; // ***
+            player_object.health -= enemyCollisionDamage;
             enemies.splice(i, 1);
             if (player_object.health <= 0) {
                 ongoingGame = false;
             }
         }
-        myGame.updateTexts();
+        game.updateTexts();
     }
 }
 
@@ -162,4 +180,99 @@ function move() {
 
     player_object.x += (keypresses["a"] ? -speed : keypresses["d"] ? speed : 0);
     player_object.y += (keypresses["w"] ? -speed : keypresses["s"] ? speed : 0);
+}
+
+function difficulty(button) {
+    spawnRate = 250;
+    aoe = true;
+    enemySpeed = 0.5;
+    enemyHealth = 2;
+    enemyCollisionDamage = 5;
+    bulletSize = 25;
+    safeAreaWidth = 200;
+    safeAreaHeight = 200;
+    switch (difficulties[button.text]) {
+        case 1:
+            button.text = 'Medium';
+            enemySpeed *= 2;
+            spawnRate /= 2;
+            enemyHealth *= 2;
+            enemyCollisionDamage *= 2;
+            bulletSize = 20;
+            break;
+        case 2:
+            button.text = 'Hard';
+            enemySpeed *= 3;
+            spawnRate /= 3;
+            enemyHealth *= 3;
+            enemyCollisionDamage *= 3;
+            bulletSize = 15;
+            break;
+        case 3:
+            button.text = ':)';
+            enemySpeed *= 5;
+            spawnRate /= 5;
+            enemyHealth *= 5;
+            enemyCollisionDamage *= 5;
+            bulletSize = 5;
+            aoe = false;
+            break;
+        case 4:
+            button.text = 'Dodge Only';
+            enemySpeed *= 3;
+            spawnRate /= 2;
+            enemyCollisionDamage *= 2;
+            bulletSize = 0;
+            aoe = false;
+            break;
+        case 5:
+            button.text = 'Easy';
+            enemySpeed *= 1;
+            spawnRate /= 1;
+            enemyHealth *= 1;
+            enemyCollisionDamage *= 1;
+            bulletSize = 25;
+            break;
+    }
+    gameDifficulty = button.text;
+    return button;
+}
+
+function eventListener(game) {
+    game.canvas.addEventListener('mousemove', function(e) {
+        mouseX = e.offsetX;
+        mouseY = e.offsetY;
+    });
+
+    game.canvas.addEventListener('mousedown', function(e) {
+        if (ongoingGame && player_object) {
+            player_object.shoot(mouseX, mouseY, bullets);
+        };
+        buttons.forEach((button) => {
+            if (!button.onClick(mouseX, mouseY)) { return; }
+            switch (button.id) {
+                case 'RESTART':
+                    game.restart();
+                    break;
+                case 'START':
+                    game.start();
+                    break;
+                case 'SETTINGS':
+                    game.settings();
+                    break;
+                case 'DIFFICULTY':
+                    button = difficulty(button);
+                    button.render();
+                    break;
+            }
+        });
+    });
+}
+
+export {
+    aoe,
+    aoeTime,
+    bulletSize,
+    safeAreaHeight,
+    safeAreaWidth
 }
