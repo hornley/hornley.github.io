@@ -1,9 +1,11 @@
-let bulletSize = 25;
+let bulletSize = 25; // ***
 let lastTime = -1;
-const safeAreaWidth = 200;
-const safeAreaHeight = 200;
+let aoe = false; // ***
+let aoeTime = 250; // ***
+let safeAreaWidth = 200; // ***
+let safeAreaHeight = 200; // ***
 
-class player {
+class Player {
     constructor(game) {
         this.game = game;
         this.health = 100;
@@ -37,29 +39,30 @@ class player {
 
         const dx = (x / l) * 10;
         const dy = (y / l) * 10;
-        bullets.push(new bullet(this.x, this.y, dx, dy, this.game, bulletSize));
+        bullets.push(new Bullet(this.x, this.y, dx, dy, this.game, bulletSize));
+        console.log(bullets);
     };
 
-    AoE(enemy, time) {
-        if (time > lastTime + 500) {
+    AoE(time, enemies) {
+        if (time > lastTime + aoeTime && aoe) {
             lastTime = time;
             this.game.context.strokeStyle = "black";
             this.game.context.fillStyle = "red";
             this.game.context.beginPath();
-            this.game.context.fillRect(this.x - safeAreaWidth / 2, this.y - safeAreaHeight / 2, safeAreaWidth, safeAreaHeight, 15);
+            this.game.context.roundRect(this.x - safeAreaWidth / 2, this.y - safeAreaHeight / 2, safeAreaWidth, safeAreaHeight, 15);
             this.game.context.fill();
-            if (enemy.x >= this.x - safeAreaWidth / 2 &&
-            enemy.x <= this.x + safeAreaWidth / 2 &&
-            enemy.y >= this.y - safeAreaHeight / 2 &&
-            enemy.y <= this.y + safeAreaHeight / 2) {
-                enemy.hp -= 1;
-                console.log(enemy.hp);
+            for (let _ in enemies) {
+                let enemy = enemies[_];
+                if (enemy.withinSafeArea(this)) {
+                    enemy.health -= 1;
+                };
             }
         }
+        return enemies;
     }
 };
 
-class bullet {
+class Bullet {
     constructor(x, y, dx, dy, game, size) {
         this.health = 100;
         this.x = x;
@@ -95,21 +98,139 @@ class bullet {
     }
 };
 
-function restart(document, myGame) {
-    let restartDIV = document.createElement("div");
-    restartDIV.className = "RestartPrompt";
-    restartDIV.innerHTML = '<h1>Restart your dogshit play!</h1><input id="restart" value="Restart" type="button">';
-    
-    document.getElementById("game").appendChild(restartDIV);
-    document.getElementById("restart").addEventListener("click", function() {
-        myGame.restart();
-        document.getElementById("game").removeChild(restartDIV);
-    });
+class Enemy {
+    constructor(type, hp, speed, size, game) {
+        this.game = game;
+        this.type = type;
+        this.x = Math.random() * (game.canvas.width - 30) + 2;
+        this.y = Math.random() * (game.canvas.height - 30) + 2;
+        this.health = hp;
+        this.max_health = hp;
+        this.speed = speed;
+        this.size = size;
+    };
+
+    collide(object) {
+        let myleft = this.x - 1;
+        let myright = this.x + 1;
+        let mytop = this.y - 1;
+        let mybottom = this.y + 1;
+        let otherleft = object.x - object.width / 2 - 7;
+        let otherright = object.x + object.width / 2 + 7;
+        let othertop = object.y - object.height / 2 - 7;
+        let otherbottom = object.y + object.height / 2 + 7;
+        
+        return (mybottom >= othertop) && (myright <= otherright) && (myleft >= otherleft) && (mytop <= otherbottom);
+    };
+
+    render() {
+        this.game.context.beginPath();
+        this.game.context.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        this.game.context.closePath();
+        this.game.context.fillStyle = this.type;
+        this.game.context.fill();
+    };
+
+    followPlayer(player) {
+        const x = this.x - player.x;
+        const y = this.y - player.y;
+        const l = Math.sqrt(x * x + y * y);
+
+        const dx = (x / l) * this.speed;
+        const dy = (y / l) * this.speed;
+        this.x += -dx;
+        this.y += -dy;
+    };
+
+    withinSafeArea(player) {
+        return (this.x >= player.x - safeAreaWidth / 2 &&
+        this.x <= player.x + safeAreaWidth / 2 &&
+        this.y >= player.y - safeAreaHeight / 2 &&
+        this.y <= player.y + safeAreaHeight / 2)
+    };
+};
+
+class Button {
+    constructor(x, y, fillStyle, textColor, text, width, height, game, id) {
+        this.id = id;
+        this.x = x;
+        this.y = y;
+        this.fillStyle = fillStyle;
+        this.textColor = textColor;
+        this.text = text;
+        this.width = width;
+        this.height = height;
+        this.ctx = game.context;
+    };
+
+    render() {
+        this.ctx.fillStyle = this.fillStyle;
+        this.ctx.beginPath();
+        this.ctx.roundRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height, 10);
+        this.ctx.fill();
+    };
+
+    onClick(mouseX, mouseY, func) {
+        if (this.x >= mouseX - this.width / 2 &&
+        this.x <= mouseX + this.width / 2 &&
+        this.y >= mouseY - this.height / 2 &&
+        this.y <= mouseY + this.height / 2) {
+            func();
+        };
+    };
+};
+
+class Text {
+    constructor(x, y, text, maxWidth, game, font='25px times-new-roman', textColor='black', textAlign='center', textBaseline='middle') {
+        this.x = x;
+        this.y = y;
+        this.text = text;
+        this.textColor = textColor;
+        this.textAlign = textAlign;
+        this.textBaseline = textBaseline;
+        this.maxWidth = maxWidth;
+        this.font = font;
+        this.ctx = game.context;
+    };
+
+    render() {
+        this.ctx.font = this.font;
+        this.ctx.fillStyle = this.textColor;
+        this.ctx.textAlign = this.textAlign;
+        this.ctx.textBaseline = this.textBaseline;
+        this.ctx.fillText(this.text, this.x, this.y, this.maxWidth);
+    }
+};
+
+function restart(myGame, id) {
+    const ctx = myGame.context;
+    const restartWidth = 350;
+    const restartHeight = 300;
+    const restartTop = 125;
+    const x = myGame.canvas.width / 2;
+    const y = myGame.canvas.height / 2;
+
+    ctx.fillStyle = 'rgba(199, 12, 115, 0.6)';
+    ctx.strokeStyle = 'black';
+    ctx.roundRect(x - restartWidth / 2, y - restartHeight / 2 - restartTop, restartWidth, restartHeight, 15);
+    ctx.fill();
+
+    const restartText = new Text(x, y - restartTop * 1.2, "Press the button below to restart", 300, myGame, "30px times-new-roman");
+    restartText.render();
+
+    const restartButton = new Button(x, y - restartTop / 2, 'rgba(135, 206, 235, 1)', 'black', "Restart", 100, 50, myGame, id);
+    const restartButtonText = new Text(x, y - restartTop / 2, "Restart", 100, myGame);
+    restartButton.render();
+    restartButtonText.render();
+
+    return restartButton;
 }
 
 export {
-    bullet,
-    player,
+    Button,
+    Enemy,
+    Bullet,
+    Player,
     restart,
     safeAreaWidth,
     safeAreaHeight
