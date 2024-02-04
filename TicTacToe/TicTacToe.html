@@ -7,26 +7,24 @@
     <link rel="icon" type="image/x-icon" href="../images/hornley-removebg-preview.ico">
     <link rel="stylesheet" href="TicTacToe.css">
     <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <script src="TicTacToe.js"></script>
+    <script src="../navBar.js"></script>
   </head>
 
   <body>
-    <ul>
-      <li><a href="../index.html">Home</a></li>
-      <li><a href="TicTacToe.html" class="active">Tic Tac Toe</a></li>
-      <li><a href="../Number_System/numsys.html">Number System Converter</a></li>
-      <li class="dropdown">
-        <a href="javascript:void(0)" class="dropbtn">Projects</a>
-        <div class="dropdown-content">
-          <a href="https://github.com/hornley/chess" target="_blank">Chess (Discordpy)</a>
-          <a href="https://github.com/hornley/taskreminder" target="_blank">Taskreminder</a>
-          <a href="https://github.com/hornley/Game_App" target="_blank">Game App (incomplete)</a>
-        </div>
-      </li>
-      <li style="float: right"><a href="../Socials/socials.html">Socials</a></li>
-      <li><a href="../Game/game.html">Game</a></li>
-      <li><a href="../Resume/resume.html">Resume</a></li>
-    </ul>
+    <div class="topnav" id="myTopnav">
+        <a href="../index.html">Home</a>
+        <a href="../TicTacToe/TicTacToe.html" class="active">Tic Tac Toe</a>
+        <a href="../Number_System/numsys.html">Number System Converter</a>
+        <a href="../Game/game.html">Game</a>
+        <a href="../Socials/socials.html">Socials</a>
+        <a href="../Resume/resume.html">Resume</a>
+        <a href="../Projects/projects.html">Projects</a>
+        <a href="javascript:void(0);" class="icon" onclick="navBar()">
+            <i class="fa fa-bars"></i>
+        </a>
+    </div>
 
     <div class="PageTitle">
         <h1>
@@ -34,11 +32,7 @@
         </h1>
     </div>
 
-    <div class="Winner">
-      <h1 class="h1Winner" id="h1Winner"></h1>
-    </div>
-
-    <div class="Box">
+    <div class="Box" id="Box">
         <div class="TicTacToe">
           <div class="Block 1" id="Block1" onclick="play(1)"></div>
           <div class="Block 2" id="Block2" onclick="play(2)"></div>
@@ -50,6 +44,10 @@
           <div class="Block 8" id="Block8" onclick="play(8)"></div>
           <div class="Block 9" id="Block9" onclick="play(9)"></div>
         </div>
+    </div>
+
+    <div class="Winner" id="Winner">
+      <h1 class="h1Winner" id="h1Winner"></h1>
     </div>
 
     <div class="Restart">

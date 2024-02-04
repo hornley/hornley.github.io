@@ -13,3 +13,7 @@ img {
     width: 75px;
     height: 75px;
 }
+
+img:hover {
+    opacity: 0.5;
+}

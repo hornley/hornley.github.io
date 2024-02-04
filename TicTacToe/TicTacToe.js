@@ -25,6 +25,11 @@ function play(blockNumber) {
 
     if (checkWin()) {
         document.getElementById("h1Winner").innerHTML = player + " won!";
+        document.getElementById("Box").style.opacity = 0.5;
+        document.getElementById("h1Winner").style.display = 'block';
+        document.getElementById("Winner").style.backgroundColor = 'aliceblue';
+        document.getElementById("Winner").style.top = '40%';
+        document.getElementById("Winner").style.left = '43%';
         return;
     }
     else {
@@ -35,7 +40,11 @@ function play(blockNumber) {
 function restart() {
     let x = 1;
     currentTurn = 1;
+    document.getElementById("Box").style.opacity = 1;
     document.getElementById("h1Winner").innerHTML = '';
+    document.getElementById("Winner").style.backgroundColor = '';
+    document.getElementById("Winner").style.top = '0';
+    document.getElementById("Winner").style.left = '0';
     while (x < 10) {
         const block = document.getElementById("Block" + x);
         if (block.children.length > 0) {

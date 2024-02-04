@@ -1,3 +1,12 @@
+body {
+    width: 100%;
+    height: 100%;
+}
+
+h1 {
+    margin: 15px;
+}
+
 .PageTitle {
     display: flex;
     justify-content: center;
@@ -13,25 +22,26 @@
 }
 
 .TicTacToe {
+    border-radius: 2%;
     display: flex;
     flex-wrap: wrap;
     justify-content: space-around;
     align-items: center;
-    width: 250px;
-    height: 250px;
+    width: 45vmin;
+    height: 45vmin;
     background-color: black;
 }
 
-.Block {
+.TicTacToe > .Block {
+    border-radius: 5%;
     background-color: powderblue;
-    width: 75px;
-    height: 75px;
-    margin: 0;
+    width: 31%;
+    height: 31%;
 }
 
 img {
-    width: 75px;
-    height: 75px;
+    width: 100%;
+    height: 100%;
     margin: 0;
 }
 
@@ -40,23 +50,29 @@ img {
     flex-wrap: wrap;
     justify-content: space-around;
     align-items: center;
-    margin: 50px;
+    margin-top: 5vmin;
 }
 
 .restartbutton {
     border: 0;
+    padding: 0;
     background-color: beige;
-    font-size: 30px;
+    font-size: 6vmin;
     font-family: 'Times New Roman', Times, serif;
 }
 
 .Winner {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
+    border-radius: 10%;
+    position: absolute;
+    width: 15vw;
+    height: 8vh;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
 }
 
 .h1Winner {
-  font-size: 30px;
+    display: none;
+    font-size: calc(16px + 0.390625vw);
 }
