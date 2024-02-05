@@ -3,6 +3,13 @@ let _ = new Array( 26 ).fill( 1 ).map( ( _, i ) => String.fromCharCode( 65 + i )
 const letters = new Map();
 const numbers = new Map();
 
+window.addEventListener('keydown', function(e) {
+    if (e.key === "Enter") {
+        e.preventDefault();
+
+        convert();
+    }
+});
 
 function convert() {
     let number = document.getElementById("toConvert").value;

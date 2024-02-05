@@ -4,7 +4,6 @@
     justify-content: center;
     align-items: center;
     width: 100vw;
-    height: 75vh;
 }
 
 .nsc {
@@ -15,11 +14,11 @@
     align-items: center;
     background-color: powderblue;
     width: 75vmin;
-    height: 70vmin;
+    height: 250px
 }
 
 .nsc h1 {
-    font-size: 3vmin;
+    font-size: 1em;
 }
 
 .toConvert {
@@ -36,8 +35,49 @@ input {
     font-family: 'Times New Roman', Times, serif;
 }
 
+.convertButton {
+    border: 0;
+    border-radius: 5%;
+}
+
 .result {
     word-wrap: break-word;
     text-align: center;
     width: 60vmin;
+}
+
+/* Media Queries */
+
+@media (min-width: 320px) and (max-width: 479px) {
+    
+}
+
+@media (min-width: 480px) {
+    .nsc {
+        height: calc(250px + 10vh);
+    }
+}
+
+@media (min-width: 600px) {
+    .nsc {
+        height: calc(250px + 15vh);
+    }
+}
+
+@media (min-width: 800px) {
+    .nsc {
+        height: calc(250px + 20vh);
+    }
+}
+
+@media (min-width: 1024px) {
+    .nsc {
+        height: calc(250px + 25vh);
+    }
+}
+
+@media (min-width: 1280) {
+    .nsc {
+        height: calc(250px + 30vh);
+    }
 }

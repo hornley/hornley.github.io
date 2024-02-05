@@ -1,17 +1,8 @@
-body {
-    width: 100%;
-    height: 100%;
-}
-
-h1 {
-    margin: 15px;
-}
-
 .PageTitle {
     display: flex;
     justify-content: center;
     color: brown;
-    font-size: 5vmin;
+    font-size: 1em;
 }
 
 .Box {
@@ -27,8 +18,8 @@ h1 {
     flex-wrap: wrap;
     justify-content: space-around;
     align-items: center;
-    width: 45vmin;
-    height: 45vmin;
+    width: calc(150px + 15vw);
+    height: calc(150px + 15vw);
     background-color: black;
 }
 
@@ -57,22 +48,15 @@ img {
     border: 0;
     padding: 0;
     background-color: beige;
-    font-size: 6vmin;
+    font-size: 1.3em;
     font-family: 'Times New Roman', Times, serif;
 }
 
 .Winner {
-    border-radius: 10%;
     position: absolute;
-    width: 15vw;
-    height: 8vh;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-}
-
-.h1Winner {
-    display: none;
-    font-size: calc(16px + 0.390625vw);
+    color: white;
+    width: 8em;
+    font-size: 1.4em;
+    text-align: center;
+    border-radius: 5%;
 }
