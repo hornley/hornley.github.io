@@ -1,6 +1,12 @@
-import { aoe, aoeTime, bulletSize, safeAreaHeight, safeAreaWidth } from "./game.js";
+import { aoe, aoeTime, safeAreaHeight, safeAreaWidth } from "./game.js";
 
 let lastTime = -1;
+const spriteWidth = 64;
+const spriteHeight = 64;
+const spiderSprite = "../images/Spider-Sprites.png";
+const spiderShoot = "../images/Spider-Shoot.png";
+let idleFrame = 0;
+let frame = 0;
 
 class Player {
     constructor(game) {
@@ -10,8 +16,8 @@ class Player {
         this.type = "black";
         this.x = game.canvas.width / 2;
         this.y = game.canvas.height / 2;
-        this.width = 50;
-        this.height = 50;
+        this.width = spriteWidth;
+        this.height = spriteHeight;
     };
 
     crash() {
@@ -19,25 +25,28 @@ class Player {
         this.y = Math.max(this.height / 2, Math.min(this.game.canvas.height - this.height / 2, this.y));
     };
 
-    render() {
+    render(mouseX, mouseY) {
         this.crash();
-        this.game.context.fillStyle = "honeydew";
-        this.game.context.strokeStyle = "black";
-        this.game.context.beginPath();
-        this.game.context.roundRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height, 5);
-        this.game.context.fill();
-        this.game.context.stroke();
+        let image = new Image();
+        image.src = spiderSprite;
+        
+        this.game.context.setTransform(1, 0, 0, 1, this.x, this.y);
+        this.game.context.rotate(Math.atan2(mouseY - this.y, mouseX - this.x) - Math.PI / 2);
+        this.game.context.drawImage(image, spriteWidth * idleFrame, 0, spriteWidth, spriteHeight, -this.width / 2, -this.height / 2, spriteWidth, spriteHeight);
+        frame++;
+        if (frame % 5 === 0) idleFrame++;
+        if (idleFrame === 3) idleFrame = 0;
+        this.game.context.setTransform(1, 0, 0, 1, 0, 0);
     };
 
     shoot(mouseX, mouseY, bullets) {
-        if (bulletSize === 0) { return; }
         const x = mouseX - this.x;
         const y = mouseY - this.y;
         const l = Math.sqrt(x * x + y * y);
 
         const dx = (x / l) * 10;
         const dy = (y / l) * 10;
-        bullets.push(new Bullet(this.x, this.y, dx, dy, this.game, bulletSize));
+        bullets.push(new Bullet(this.x, this.y, dx, dy, this.game, mouseX, mouseY));
     };
 
     AoE(time, enemies) {
@@ -60,15 +69,18 @@ class Player {
 };
 
 class Bullet {
-    constructor(x, y, dx, dy, game, size) {
+    constructor(x, y, dx, dy, game, mouseX, mouseY) {
         this.health = 100;
         this.x = x;
         this.y = y;
         this.dx = dx;
         this.dy = dy;
-        this.width = size;
-        this.height = size;
+        this.width = 24;
+        this.height = 44;
         this.game = game;
+        this.mouseX = mouseX;
+        this.mouseY = mouseY;
+        this.angle = 0;
     }
 
     tick() {
@@ -86,12 +98,15 @@ class Bullet {
     }
 
     render() {
-        this.game.context.strokeStyle = "black";
-        this.game.context.fillStyle = "red";
-        this.game.context.beginPath();
-        this.game.context.roundRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height, [50, 50, 50, 50]);
-        this.game.context.fill();
-        this.game.context.stroke();
+        let image = new Image();
+        image.src = spiderShoot;
+
+        if (!this.angle) this.angle = Math.atan2(this.mouseY - this.y, this.mouseX - this.x) + Math.PI / 2;
+
+        this.game.context.setTransform(1, 0, 0, 1, this.x, this.y);
+        this.game.context.rotate(this.angle);
+        this.game.context.drawImage(image, -this.width / 2, -this.height / 2);
+        this.game.context.setTransform(1, 0, 0, 1, 0, 0);
     }
 };
 
@@ -112,10 +127,10 @@ class Enemy {
         let myright = this.x + 1;
         let mytop = this.y - 1;
         let mybottom = this.y + 1;
-        let otherleft = object.x - object.width / 2 - 7;
-        let otherright = object.x + object.width / 2 + 7;
-        let othertop = object.y - object.height / 2 - 7;
-        let otherbottom = object.y + object.height / 2 + 7;
+        let otherleft = object.x - object.width / 2;
+        let otherright = object.x + object.width / 2;
+        let othertop = object.y - object.height / 2;
+        let otherbottom = object.y + object.height / 2;
         
         return (mybottom >= othertop) && (myright <= otherright) && (myleft >= otherleft) && (mytop <= otherbottom);
     };
@@ -189,7 +204,7 @@ class Button {
 };
 
 class Text {
-    constructor(x, y, text, maxWidth, ctx, font='25px times-new-roman', textColor='black', textAlign='center', textBaseline='middle') {
+    constructor(x, y, text, maxWidth, ctx, font='24px times-new-roman', textColor='black', textAlign='center', textBaseline='middle') {
         this.x = x;
         this.y = y;
         this.text = text;

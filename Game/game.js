@@ -5,12 +5,11 @@ const difficulties = {'Easy': 1, 'Medium': 2, 'Hard': 3, ':)': 4, 'Dodge Only': 
 let speed = 5; // ***^
 let enemySize = 5; // ***^
 let aoeTime = 250; // ***^
-let aoe = true; // ***
+let aoe = false; // ***
 let spawnRate = 250; // ***
 let enemySpeed = 0.5; // ***
 let enemyHealth = 2; // ***
 let enemyCollisionDamage = 5; // ***
-let bulletSize = 25; // ***
 let safeAreaWidth = 200; // ***
 let safeAreaHeight = 200; // ***
 
@@ -28,10 +27,9 @@ let gameDifficulty;
 let game = {
     canvas: document.getElementById("canvas"),
     menu: function() {
-        this.canvas.style.width = '70%';
-        this.canvas.style.height = '80%';
         this.canvas.width = this.canvas.offsetWidth;
         this.canvas.height = this.canvas.offsetHeight;
+        console.log(this.canvas.width, this.canvas.height);
         this.context = this.canvas.getContext("2d");
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.context.fillStyle = 'rgba(30, 178, 54, 0.9)';
@@ -134,7 +132,7 @@ function updateGame() {
 
     game.clear();
     move();
-    player_object.render();
+    player_object.render(mouseX, mouseY);
     enemies = player_object.AoE(time, enemies);
 
     for (let i = 0; i < bullets.length; i++) {
@@ -184,11 +182,10 @@ function move() {
 
 function difficulty(button) {
     spawnRate = 250;
-    aoe = true;
+    aoe = false;
     enemySpeed = 0.5;
     enemyHealth = 2;
     enemyCollisionDamage = 5;
-    bulletSize = 25;
     safeAreaWidth = 200;
     safeAreaHeight = 200;
     switch (difficulties[button.text]) {
@@ -198,7 +195,6 @@ function difficulty(button) {
             spawnRate /= 2;
             enemyHealth *= 2;
             enemyCollisionDamage *= 2;
-            bulletSize = 20;
             break;
         case 2:
             button.text = 'Hard';
@@ -206,7 +202,6 @@ function difficulty(button) {
             spawnRate /= 3;
             enemyHealth *= 3;
             enemyCollisionDamage *= 3;
-            bulletSize = 15;
             break;
         case 3:
             button.text = ':)';
@@ -214,7 +209,6 @@ function difficulty(button) {
             spawnRate /= 5;
             enemyHealth *= 5;
             enemyCollisionDamage *= 5;
-            bulletSize = 5;
             aoe = false;
             break;
         case 4:
@@ -222,7 +216,6 @@ function difficulty(button) {
             enemySpeed *= 3;
             spawnRate /= 2;
             enemyCollisionDamage *= 2;
-            bulletSize = 0;
             aoe = false;
             break;
         case 5:
@@ -231,7 +224,6 @@ function difficulty(button) {
             spawnRate /= 1;
             enemyHealth *= 1;
             enemyCollisionDamage *= 1;
-            bulletSize = 25;
             break;
     }
     gameDifficulty = button.text;
@@ -245,6 +237,7 @@ function eventListener(game) {
     });
 
     game.canvas.addEventListener('mousedown', function(e) {
+        e.preventDefault();
         if (ongoingGame && player_object) {
             player_object.shoot(mouseX, mouseY, bullets);
         };
@@ -272,7 +265,6 @@ function eventListener(game) {
 export {
     aoe,
     aoeTime,
-    bulletSize,
     safeAreaHeight,
     safeAreaWidth
 }
