@@ -12,12 +12,16 @@ class Player {
     constructor(game) {
         this.game = game;
         this.health = 100;
-        this.max_health = 100;
+        this.maxHealth = 100;
         this.type = "black";
         this.x = game.canvas.width / 2;
         this.y = game.canvas.height / 2;
         this.width = spriteWidth;
         this.height = spriteHeight;
+        this.level = 1;
+        this.experience = 0;
+        this.experienceRequired = 10;
+        this.statPoints = 0;
     };
 
     crash() {
@@ -65,7 +69,16 @@ class Player {
             }
         }
         return enemies;
-    }
+    };
+
+    checkExp() {
+        if (this.experience >= this.experienceRequired) {
+            this.level++;
+            this.statPoints += 4;
+            this.experience -= this.experienceRequired;
+            this.experienceRequired *= 1.3;
+        };
+    };
 };
 
 class Bullet {

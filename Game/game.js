@@ -29,7 +29,6 @@ let game = {
     menu: function() {
         this.canvas.width = this.canvas.offsetWidth;
         this.canvas.height = this.canvas.offsetHeight;
-        console.log(this.canvas.width, this.canvas.height);
         this.context = this.canvas.getContext("2d");
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.context.fillStyle = 'rgba(30, 178, 54, 0.9)';
@@ -96,7 +95,7 @@ let game = {
         this.context.textAlign = 'left';
         this.context.textBaseline = 'middle';
         this.context.fillStyle = "black";
-        let hp_message = "Health = " + player_object.health + "/" + player_object.max_health;
+        let hp_message = "Health = " + player_object.health + "/" + player_object.maxHealth;
         this.context.fillText(hp_message, 10, 25);
         let score_message = "Score = " + score;
         this.context.fillText(score_message, 10, 50);
@@ -147,12 +146,14 @@ function updateGame() {
         if (enemy.health <= 0) {
             enemies.splice(i, 1);
             score++;
+            player_object.experience++;
         }
 
         bullets.forEach((bullet) => {
             if (enemy.collide(bullet)) {
                 enemies.splice(i, 1);
                 score++;
+                player_object.experience++;
             }
         })
 
@@ -166,6 +167,7 @@ function updateGame() {
                 ongoingGame = false;
             }
         }
+        player_object.checkExp();
         game.updateTexts();
     }
 }
