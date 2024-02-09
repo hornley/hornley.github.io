@@ -5,8 +5,13 @@ const spriteWidth = 64;
 const spriteHeight = 64;
 const spiderSprite = "../images/Spider-Sprites.png";
 const spiderShoot = "../images/Spider-Shoot.png";
+const enemySprite = "../images/Enemy.png";
 let idleFrame = 0;
 let frame = 0;
+
+// this.game.context.fillStyle = 'red';
+// this.game.context.fillRect(-this.width/2, -this.height/2, this.width, this.height);
+// this.game.context.fill();
 
 class Player {
     constructor(game) {
@@ -22,6 +27,8 @@ class Player {
         this.experience = 0;
         this.experienceRequired = 10;
         this.statPoints = 0;
+        this.bulletDamage = 5;
+        this.penetration = 1;
     };
 
     crash() {
@@ -41,6 +48,8 @@ class Player {
         if (frame % 5 === 0) idleFrame++;
         if (idleFrame === 3) idleFrame = 0;
         this.game.context.setTransform(1, 0, 0, 1, 0, 0);
+
+        experienceBar(this.experience, this.experienceRequired, this.game.context, this.game.canvas.width, this.game.canvas.height);
     };
 
     shoot(mouseX, mouseY, bullets) {
@@ -50,7 +59,7 @@ class Player {
 
         const dx = (x / l) * 10;
         const dy = (y / l) * 10;
-        bullets.push(new Bullet(this.x, this.y, dx, dy, this.game, mouseX, mouseY));
+        bullets.push(new Bullet(this.x, this.y, dx, dy, this.game, mouseX, mouseY, this.bulletDamage, this.penetration));
     };
 
     AoE(time, enemies) {
@@ -82,8 +91,8 @@ class Player {
 };
 
 class Bullet {
-    constructor(x, y, dx, dy, game, mouseX, mouseY) {
-        this.health = 100;
+    constructor(x, y, dx, dy, game, mouseX, mouseY, damage, pene) {
+        this.damage = damage;
         this.x = x;
         this.y = y;
         this.dx = dx;
@@ -94,6 +103,7 @@ class Bullet {
         this.mouseX = mouseX;
         this.mouseY = mouseY;
         this.angle = 0;
+        this.penetration = pene;
     }
 
     tick() {
@@ -121,25 +131,25 @@ class Bullet {
         this.game.context.drawImage(image, -this.width / 2, -this.height / 2);
         this.game.context.setTransform(1, 0, 0, 1, 0, 0);
     }
-};
+}; 
 
 class Enemy {
-    constructor(type, hp, speed, size, game) {
+    constructor(hp, speed, game) {
         this.game = game;
-        this.type = type;
         this.x = Math.random() * (game.canvas.width - 30) + 2;
         this.y = Math.random() * (game.canvas.height - 30) + 2;
         this.health = hp;
         this.max_health = hp;
         this.speed = speed;
-        this.size = size;
+        this.width = 51;
+        this.height = 24;
     };
 
     collide(object) {
-        let myleft = this.x - 1;
-        let myright = this.x + 1;
-        let mytop = this.y - 1;
-        let mybottom = this.y + 1;
+        let myleft = this.x;
+        let myright = this.x;
+        let mytop = this.y;
+        let mybottom = this.y;
         let otherleft = object.x - object.width / 2;
         let otherright = object.x + object.width / 2;
         let othertop = object.y - object.height / 2;
@@ -148,12 +158,16 @@ class Enemy {
         return (mybottom >= othertop) && (myright <= otherright) && (myleft >= otherleft) && (mytop <= otherbottom);
     };
 
-    render() {
-        this.game.context.beginPath();
-        this.game.context.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        this.game.context.closePath();
-        this.game.context.fillStyle = this.type;
-        this.game.context.fill();
+    render(player) {
+        let image = new Image();
+        image.src = enemySprite;
+
+        let angle = Math.atan2(player.y - this.y, player.x - this.x) + .2*Math.PI/2;
+
+        this.game.context.setTransform(1, 0, 0, 1, this.x, this.y);
+        this.game.context.rotate(angle);
+        this.game.context.drawImage(image, -this.width / 2, -this.height / 2);
+        this.game.context.setTransform(1, 0, 0, 1, 0, 0);
     };
 
     followPlayer(player) {
@@ -176,7 +190,7 @@ class Enemy {
 };
 
 class Button {
-    constructor(x, y, fillStyle, textColor, width, height, ctx, id, text=null) {
+    constructor(x, y, fillStyle, textColor, width, height, ctx, id, text=null, round=10) {
         this.id = id;
         this.x = x;
         this.y = y;
@@ -186,12 +200,13 @@ class Button {
         this.height = height;
         this.ctx = ctx;
         this.text = text;
+        this.round = round;
     };
 
     render() {
         this.ctx.fillStyle = this.fillStyle;
         this.ctx.beginPath();
-        this.ctx.roundRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height, 10);
+        this.ctx.roundRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height, this.round);
         this.ctx.fill();
         if (this.text) { 
             const text = new Text(this.x, this.y, this.text, this.width, this.ctx);
@@ -235,6 +250,13 @@ class Text {
         this.ctx.textAlign = this.textAlign;
         this.ctx.textBaseline = this.textBaseline;
         this.ctx.fillText(this.text, this.x, this.y, this.maxWidth);
+    }
+
+    update(text) {
+        this.ctx.fillStyle = "#5C8374";
+        this.ctx.fillRect(this.x - 12.5, this.y - 12.5, 25, 25);
+        this.text = text;
+        this.render();
     }
 };
 
@@ -293,12 +315,42 @@ function settings(myGame) {
 
 }
 
+function experienceBar(experience, experienceRequired, context, gameWidth, gameHeight) {
+    let currentExperience = experience/experienceRequired;
+    let remainingExperience = (experienceRequired - experience)/experienceRequired;
+    let currentRectWidth = gameWidth * currentExperience;
+    let expBarHeight = 20;
+    const percentage = new Text(gameWidth/2, gameHeight - 10, `Exp: ${(experience).toFixed(2)}/${(experienceRequired).toFixed(2)} (${(currentExperience * 100).toFixed(2)}%)`, 150, context, '15px times-new-roman', 'white');
+    
+    context.fillStyle = "red";
+    context.fillRect(0, gameHeight - expBarHeight, currentRectWidth, expBarHeight);
+    context.fillStyle = "black";
+    context.fillRect(0 + currentRectWidth, gameHeight - expBarHeight, gameWidth * remainingExperience, expBarHeight);
+    percentage.render();
+}
+
+function healthBar(game, player) {
+    game.context.lineWidth = 25;
+    game.context.strokeStyle = 'black';
+    game.context.beginPath();
+    game.context.arc(game.canvas.width, 0, 125, Math.PI, .5*Math.PI, true);
+    game.context.stroke();
+    game.context.strokeStyle = 'red';
+    game.context.beginPath();
+    game.context.arc(game.canvas.width, 0, 125, (player.health/player.maxHealth/2 + 0.5)*Math.PI, .5*Math.PI, true);
+    game.context.stroke();
+    const playerLevelText = new Text(game.canvas.width - 40, 50, player.level, 50, game.context, '60px times-new-roman');
+    playerLevelText.render();
+}
+
 export {
     Button,
     Enemy,
     Bullet,
     Player,
+    Text,
     restart,
     menu,
-    settings
+    settings,
+    healthBar
 };

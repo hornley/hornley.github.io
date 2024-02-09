@@ -1,9 +1,9 @@
-import { Enemy, Button, Player, restart, menu, settings } from "./entity.js";
+import { Enemy, Button, Player, restart, menu, healthBar } from "./entity.js";
+import { upgradeMenu, upgradeBulletDamage, upgradeBulletPenetration, upgradeHealth } from "./upgrades.js";
 
 const moves = ['w', 'a', 's', 'd'];
 const difficulties = {'Easy': 1, 'Medium': 2, 'Hard': 3, ':)': 4, 'Dodge Only': 5};
 let speed = 5; // ***^
-let enemySize = 5; // ***^
 let aoeTime = 250; // ***^
 let aoe = false; // ***
 let spawnRate = 250; // ***
@@ -13,10 +13,17 @@ let enemyCollisionDamage = 5; // ***
 let safeAreaWidth = 200; // ***
 let safeAreaHeight = 200; // ***
 
+const fps = 60;
+const interval = 1000/fps;
+let now;
+let then = Date.now();
+let delta;
+
 let score = 0;
 let mouseX = 0.0;
 let mouseY = 0.0;
 let ongoingGame = true;
+let paused = false;
 let enemies = [];
 let bullets = [];
 let buttons = [];
@@ -24,6 +31,7 @@ let lastSpawn = -1;
 let keypresses;
 let player_object;
 let gameDifficulty;
+let upgradeMenus;
 let game = {
     canvas: document.getElementById("canvas"),
     menu: function() {
@@ -33,6 +41,7 @@ let game = {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.context.fillStyle = 'rgba(30, 178, 54, 0.9)';
         this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        this.frameNo = 0;
 
         const menuButtons = menu(game);
         buttons.push(menuButtons[0], menuButtons[1], menuButtons[2]);
@@ -44,6 +53,10 @@ let game = {
             if (moves.includes(e.key)) {
                 keypresses[e.key] = true;
             }
+            
+            if (e.key === " ") {
+                upgrade();
+            }
         });
         
         window.addEventListener('keyup', function(e) {
@@ -53,24 +66,25 @@ let game = {
         });
         player_object = new Player(game);
         buttons = [];
-        updateGame();
+        buttons.push(upgradeMenu(game));
+        loop();
     },
     settings: function() {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.context.fillStyle = 'rgba(30, 178, 54, 0.9)';
         this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-
     },
     clear: function() {
-        requestAnimationFrame(updateGame);
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.context.fillStyle = "aliceblue";
         this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
-        this.context.strokeStyle = "black";
-        this.context.beginPath();
-        this.context.roundRect(player_object.x - safeAreaWidth / 2, player_object.y - safeAreaHeight / 2, safeAreaWidth, safeAreaHeight, 15);
-        this.context.stroke();
+        if (aoe) {
+            this.context.strokeStyle = "black";
+            this.context.lineWidth = 1;
+            this.context.beginPath();
+            this.context.roundRect(player_object.x - safeAreaWidth / 2, player_object.y - safeAreaHeight / 2, safeAreaWidth, safeAreaHeight, 15);
+            this.context.stroke();
+        }
     },
     restart: function() {
         buttons = [];
@@ -79,7 +93,8 @@ let game = {
         ongoingGame = true;
         player_object = new Player(game);
         this.context = this.canvas.getContext("2d");
-        updateGame();
+        buttons.push(upgradeMenu(game));
+        loop();
     },
     end: function() {
         buttons.push(restart(game));
@@ -88,17 +103,16 @@ let game = {
         this.context = null;
     },
     updateTexts: function() {
-        this.context.clearRect(0, 0, 190, 60);
+        this.context.clearRect(0, 0, 150, 35);
         this.context.fillStyle = "rgba(240, 248, 255, 1)";
-        this.context.fillRect(0, 0, 190, 60);
+        this.context.fillRect(0, 0, 150, 35);
         this.context.font = "24px times-new-roman";
         this.context.textAlign = 'left';
         this.context.textBaseline = 'middle';
         this.context.fillStyle = "black";
-        let hp_message = "Health = " + player_object.health + "/" + player_object.maxHealth;
-        this.context.fillText(hp_message, 10, 25);
-        let score_message = "Score = " + score;
-        this.context.fillText(score_message, 10, 50);
+        let score_message = "Score: " + score;
+        this.context.fillText(score_message, 10, 25);
+        healthBar(game, player_object);
     }
 };
 
@@ -116,16 +130,31 @@ function spawnEnemy(time) {
     }
 
     lastSpawn = time;
-    let t = Math.random() < 0.50 ? "red" : "blue";
-    let enemy = new Enemy(t, enemyHealth, enemySpeed, enemySize, game);
+    let enemy = new Enemy(enemyHealth, enemySpeed, game);
     (!enemy.withinSafeArea(player_object)) ? enemies.push(enemy) : '';
 }
 
-function updateGame() {
+function loop() {
     if (!ongoingGame) {
         game.end();
         return;
     }
+    if (paused) {
+        return;
+    }
+    requestAnimationFrame(loop);
+
+    now = Date.now();
+    delta = now - then;
+    if (delta > interval) updateGame(); then = now - (delta % interval); game.frameNo++;
+}
+
+function pause() {
+    paused = !paused;
+    loop();
+}
+
+function updateGame() {
     let time = Date.now();
     spawnEnemy(time);    
 
@@ -140,6 +169,12 @@ function updateGame() {
         bullet.render();
     }
 
+    buttons.forEach((button) => {
+        if (button.id === 'UPGRADE' && player_object.statPoints >= 1) {
+            button.render();
+        }
+    })
+
     for (let i = 0; i < enemies.length; i++) {
         let enemy = enemies[i];
 
@@ -149,16 +184,18 @@ function updateGame() {
             player_object.experience++;
         }
 
-        bullets.forEach((bullet) => {
+        bullets.forEach((bullet, index) => {
             if (enemy.collide(bullet)) {
                 enemies.splice(i, 1);
                 score++;
                 player_object.experience++;
+                bullet.penetration -= 1;
+                if (bullet.penetration <= 0) bullets.splice(index, 1);
             }
         })
 
         enemy.followPlayer(player_object);
-        enemy.render();
+        enemy.render(player_object);
 
         if (enemy.collide(player_object)) {
             player_object.health -= enemyCollisionDamage;
@@ -232,6 +269,14 @@ function difficulty(button) {
     return button;
 }
 
+function upgrade() {
+    if (player_object.statPoints >= 1) {
+        upgradeMenus = upgradeMenu(game, player_object);
+        buttons.push(upgradeMenus[0], upgradeMenus[1], upgradeMenus[2]);
+    }
+    pause();
+}
+
 function eventListener(game) {
     game.canvas.addEventListener('mousemove', function(e) {
         mouseX = e.offsetX;
@@ -240,24 +285,44 @@ function eventListener(game) {
 
     game.canvas.addEventListener('mousedown', function(e) {
         e.preventDefault();
-        if (ongoingGame && player_object) {
+        if (ongoingGame && player_object && !paused) {
             player_object.shoot(mouseX, mouseY, bullets);
         };
+        let pressed = false;
         buttons.forEach((button) => {
-            if (!button.onClick(mouseX, mouseY)) { return; }
+            if (!button.onClick(mouseX, mouseY) || pressed) { return; }
             switch (button.id) {
                 case 'RESTART':
                     game.restart();
+                    pressed = true;
                     break;
                 case 'START':
                     game.start();
+                    pressed = true;
                     break;
                 case 'SETTINGS':
                     game.settings();
+                    pressed = true;
                     break;
                 case 'DIFFICULTY':
                     button = difficulty(button);
                     button.render();
+                    pressed = true;
+                    break;
+                case 'UPGRADE':
+                    upgrade();
+                    break;
+                case 'UPGRADE-HEALTH':
+                    upgradeHealth(player_object);
+                    pressed = true;
+                    break;
+                case 'UPGRADE-BULLET_DAMAGE':
+                    upgradeBulletDamage(player_object);
+                    pressed = true;
+                    break;
+                case 'UPGRADE-BULLET_PENETRATION':
+                    upgradeBulletPenetration(player_object);
+                    pressed = true;
                     break;
             }
         });
