@@ -1,17 +1,25 @@
-import { Enemy, Button, Player, restart, menu, healthBar } from "./entity.js";
-import { upgradeMenu, upgradeBulletDamage, upgradeBulletPenetration, upgradeHealth } from "./upgrades.js";
+import { Enemy, Player, restart, menu, healthBar } from "./entity.js";
+import { upgradeMenu, upgradeBulletDamage, upgradeBulletPenetration, upgradeHealth, upgradeAttackSpeed, upgradeMovementSpeed } from "./upgrades.js";
 
 const moves = ['w', 'a', 's', 'd'];
-const difficulties = {'Easy': 1, 'Medium': 2, 'Hard': 3, ':)': 4, 'Dodge Only': 5};
-let speed = 5; // ***^
-let aoeTime = 250; // ***^
-let aoe = false; // ***
+
+// Difficulty rampage
+let gameDifficulty = 'Easy';
+const difficulties = {'Easy': 1.15, 'Medium': 1.3, 'Hard': 1.5, ':)': 2, 'Dodge Only': 5};
+let gameRound;
+let gameRounds = {0: true, 1: false};
+
+/* Base
+& - not affected by rampage
+*/
+let aoeTime = 250; // ***&
+let aoe = false; // ***&
+let safeAreaWidth = 200; // ***&
+let safeAreaHeight = 200; // ***&
 let spawnRate = 250; // ***
 let enemySpeed = 0.5; // ***
-let enemyHealth = 2; // ***
+let enemyHealth = 1; // ***
 let enemyCollisionDamage = 5; // ***
-let safeAreaWidth = 200; // ***
-let safeAreaHeight = 200; // ***
 
 const fps = 60;
 const interval = 1000/fps;
@@ -30,7 +38,6 @@ let buttons = [];
 let lastSpawn = -1;
 let keypresses;
 let player_object;
-let gameDifficulty;
 let upgradeMenus;
 let game = {
     canvas: document.getElementById("canvas"),
@@ -49,12 +56,14 @@ let game = {
         eventListener(game);
     },
     start: function() {
+        this.canvas.style.cursor = 'none';
         window.addEventListener('keydown', function(e) {
             if (moves.includes(e.key)) {
                 keypresses[e.key] = true;
             }
             
             if (e.key === " ") {
+                this.canvas.style.cursor = (this.canvas.style.cursor === 'auto') ? 'none' : 'auto';
                 upgrade();
             }
         });
@@ -87,6 +96,11 @@ let game = {
         }
     },
     restart: function() {
+        this.canvas.style.cursor = 'none';
+        spawnRate = 250;
+        enemySpeed = 0.5;
+        enemyHealth = 2;
+        enemyCollisionDamage = 5;
         buttons = [];
         lastSpawn = -1;
         score = 0;
@@ -97,6 +111,7 @@ let game = {
         loop();
     },
     end: function() {
+        this.canvas.style.cursor = 'auto';
         buttons.push(restart(game));
         enemies = [];
         bullets = [];
@@ -123,11 +138,7 @@ function launch() {
 }
 
 function spawnEnemy(time) {
-    if (time <= (lastSpawn + spawnRate)) { return; }
-
-    if (gameDifficulty === 'Dodge Only') {
-        score += 5;
-    }
+    if (time <= (lastSpawn + spawnRate) || enemies.length >= 30) { return; }
 
     lastSpawn = time;
     let enemy = new Enemy(enemyHealth, enemySpeed, game);
@@ -155,12 +166,14 @@ function pause() {
 }
 
 function updateGame() {
+    increaseDifficulty();
     let time = Date.now();
     spawnEnemy(time);    
 
     game.clear();
     move();
     player_object.render(mouseX, mouseY);
+    cursor();
     enemies = player_object.AoE(time, enemies);
 
     for (let i = 0; i < bullets.length; i++) {
@@ -186,10 +199,9 @@ function updateGame() {
 
         bullets.forEach((bullet, index) => {
             if (enemy.collide(bullet)) {
-                enemies.splice(i, 1);
-                score++;
-                player_object.experience++;
                 bullet.penetration -= 1;
+                enemy.health -= player_object.bulletDamage;
+                if (enemy.health <= 0) enemies.splice(i, 1); score++; player_object.experience++;
                 if (bullet.penetration <= 0) bullets.splice(index, 1);
             }
         })
@@ -215,54 +227,39 @@ function move() {
     const directions = { w: 0, a: 0, s: 0, d: 0 };
     const diagonal = keypresses.filter((key) => directions[key]).length === 2;
 
-    player_object.x += (keypresses["a"] ? -speed : keypresses["d"] ? speed : 0);
-    player_object.y += (keypresses["w"] ? -speed : keypresses["s"] ? speed : 0);
+    player_object.x += (keypresses["a"] ? -player_object.speed : keypresses["d"] ? player_object.speed : 0);
+    player_object.y += (keypresses["w"] ? -player_object.speed : keypresses["s"] ? player_object.speed : 0);
+}
+
+function increaseDifficulty() {
+    gameRound = Math.floor(player_object.level / 2);
+    let difficultyRatio = difficulties[gameDifficulty];
+    if (!gameRounds[gameRound]) {
+        enemySpeed *= difficultyRatio;
+        enemyHealth += Math.floor(difficultyRatio * 1.5);
+        enemyCollisionDamage *= difficultyRatio;
+        spawnRate /= difficultyRatio;
+        gameRounds[gameRound++] = true;
+        gameRounds[gameRound++] = false;
+    }
 }
 
 function difficulty(button) {
-    spawnRate = 250;
-    aoe = false;
-    enemySpeed = 0.5;
-    enemyHealth = 2;
-    enemyCollisionDamage = 5;
-    safeAreaWidth = 200;
-    safeAreaHeight = 200;
-    switch (difficulties[button.text]) {
-        case 1:
+    switch (button.text) {
+        case 'Easy':
             button.text = 'Medium';
-            enemySpeed *= 2;
-            spawnRate /= 2;
-            enemyHealth *= 2;
-            enemyCollisionDamage *= 2;
             break;
-        case 2:
+        case 'Medium':
             button.text = 'Hard';
-            enemySpeed *= 3;
-            spawnRate /= 3;
-            enemyHealth *= 3;
-            enemyCollisionDamage *= 3;
             break;
-        case 3:
+        case 'Hard':
             button.text = ':)';
-            enemySpeed *= 5;
-            spawnRate /= 5;
-            enemyHealth *= 5;
-            enemyCollisionDamage *= 5;
-            aoe = false;
             break;
-        case 4:
+        case ':)':
             button.text = 'Dodge Only';
-            enemySpeed *= 3;
-            spawnRate /= 2;
-            enemyCollisionDamage *= 2;
-            aoe = false;
             break;
-        case 5:
+        case 'Dodge Only':
             button.text = 'Easy';
-            enemySpeed *= 1;
-            spawnRate /= 1;
-            enemyHealth *= 1;
-            enemyCollisionDamage *= 1;
             break;
     }
     gameDifficulty = button.text;
@@ -272,7 +269,7 @@ function difficulty(button) {
 function upgrade() {
     if (player_object.statPoints >= 1) {
         upgradeMenus = upgradeMenu(game, player_object);
-        buttons.push(upgradeMenus[0], upgradeMenus[1], upgradeMenus[2]);
+        buttons.push(upgradeMenus[0], upgradeMenus[1], upgradeMenus[2], upgradeMenus[3], upgradeMenus[4]);
     }
     pause();
 }
@@ -324,9 +321,33 @@ function eventListener(game) {
                     upgradeBulletPenetration(player_object);
                     pressed = true;
                     break;
+                case 'UPGRADE-ATTACK_SPEED':
+                    upgradeAttackSpeed(player_object);
+                    pressed = true;
+                    break;
+                case 'UPGRADE-MOVEMENT_SPEED':
+                    upgradeMovementSpeed(player_object);
+                    pressed = true;
+                    break;
             }
         });
     });
+}
+
+function cursor() {
+    game.context.lineWidth = 5;
+    game.context.strokeStyle = 'grey';
+    game.context.beginPath();
+    game.context.arc(mouseX, mouseY, 12, 0, 2*Math.PI);
+    game.context.stroke();
+    game.context.strokeStyle = 'black';
+    game.context.beginPath();
+    if (game.frameNo < player_object.lastShot + 60/player_object.attackSpeed && player_object.lastShot != 0) {
+        game.context.arc(mouseX, mouseY, 12, 0, ( (game.frameNo % 60) / ((player_object.lastShot + (fps/player_object.attackSpeed)) % 60) )*Math.PI*2);
+    } else {
+        game.context.arc(mouseX, mouseY, 12, 0, Math.PI*2);
+    }
+    game.context.stroke();
 }
 
 export {
