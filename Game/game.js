@@ -1,4 +1,4 @@
-import { Enemy, Player, restart, menu, healthBar } from "./entity.js";
+import { Enemy, Player, restart, menu, healthBar, Text } from "./entity.js";
 import { upgradeMenu, upgradeBulletDamage, upgradeBulletPenetration, upgradeHealth, upgradeAttackSpeed, upgradeMovementSpeed } from "./upgrades.js";
 
 const moves = ['w', 'a', 's', 'd'];
@@ -63,7 +63,6 @@ let game = {
             }
             
             if (e.key === " ") {
-                this.canvas.style.cursor = (this.canvas.style.cursor === 'auto') ? 'none' : 'auto';
                 upgrade();
             }
         });
@@ -185,6 +184,8 @@ function updateGame() {
     buttons.forEach((button) => {
         if (button.id === 'UPGRADE' && player_object.statPoints >= 1) {
             button.render();
+            const upgradeTooltip = new Text(game.canvas.width/2, game.canvas.height - 65, "Press Spacebar to open upgrade menu", 300, game.context);
+            upgradeTooltip.render();
         }
     })
 
@@ -267,6 +268,7 @@ function difficulty(button) {
 }
 
 function upgrade() {
+    game.canvas.style.cursor = (game.canvas.style.cursor === 'auto') ? 'none' : 'auto';
     if (player_object.statPoints >= 1) {
         upgradeMenus = upgradeMenu(game, player_object);
         buttons.push(upgradeMenus[0], upgradeMenus[1], upgradeMenus[2], upgradeMenus[3], upgradeMenus[4]);
