@@ -274,7 +274,7 @@ function restart(myGame) {
     ctx.roundRect(x - restartWidth / 2, y - restartHeight / 2 - restartTop, restartWidth, restartHeight, 15);
     ctx.fill();
 
-    const restartText = new Text(x, y - restartTop * 1.2, "Press the button below to restart", 300, ctx, "30px times-new-roman");
+    const restartText = new Text(x, y - restartTop * 1.2, "Press the button below to restart", 300, ctx, 'black',"30px times-new-roman");
     restartText.render();
 
     const restartButton = new Button(x, y - restartTop / 2, 'rgba(135, 206, 235, 1)', 'black', 100, 50, ctx, 'RESTART', "Restart");
