@@ -13,6 +13,7 @@ const enemySprite = "../images/Enemy.png";
 let enemyImage = new Image();
 enemyImage.src = enemySprite;
 let idleFrame = 0;
+const version = 'Version: 0.2.1-alpha';
 
 class Player {
     constructor(game) {
@@ -300,7 +301,7 @@ function menu(myGame) {
 
     const gameTitle = new Text(x, y - 125, "Bugs War", 500, ctx, 'black', '75px times-new-roman');
     gameTitle.render();
-    const gameVersion = new Text(x * 2 - 85, y * 2 - 17, "Version: 0.2.0-alpha", 150, ctx, 'black', '20px times-new-roman');
+    const gameVersion = new Text(x * 2 - 85, y * 2 - 17, version, 150, ctx, 'black', '20px times-new-roman');
     gameVersion.render();
 
     return [startButton, difficultyButton, settingsButton];
