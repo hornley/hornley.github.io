@@ -15,6 +15,23 @@ enemyImage.src = enemySprite;
 let idleFrame = 0;
 const version = 'Version: 0.2.1-alpha';
 
+class Sound {
+    constructor(src) {
+        this.sound = document.createElement('audio');
+        this.sound.src = src;
+        this.sound.setAttribute("preload", "auto");
+        this.sound.setAttribute("controls", "none");
+        this.sound.style.display = "none";
+        document.body.appendChild(this.sound);
+    }
+    play() {
+        this.sound.play();
+    }
+}
+
+let levelUpSound = new Sound('../Audio/level-up.mp3');
+let shootSound = new Sound('../Audio/shoot.mp3');
+
 class Player {
     constructor(game) {
         this.game = game;
@@ -64,6 +81,7 @@ class Player {
         const dx = (x / l) * 10;
         const dy = (y / l) * 10;
         this.lastShot = this.game.frameNo;
+        shootSound.play();
         bullets.push(new Bullet(this.x, this.y, dx, dy, this.game, mouseX, mouseY, this.bulletDamage, this.penetration));
     };
 
@@ -87,6 +105,7 @@ class Player {
 
     checkExp() {
         if (this.experience >= this.experienceRequired) {
+            levelUpSound.play();
             this.level++;
             this.statPoints += 4;
             this.experience -= this.experienceRequired;
