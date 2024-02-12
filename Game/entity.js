@@ -308,22 +308,42 @@ function menu(myGame) {
     const startTop = 75;
     const difficultyTop = 15;
     const settingsTop = 135;
-    const x = myGame.canvas.width / 2;
+    const x = myGame.canvas.width * .15;
     const y = myGame.canvas.height / 2;
+    // let image = new Image();
+    // image.src = "../images/background-image.jpeg";
 
     const startButton = new Button(x, y + startTop, 'rgb(57, 202, 202)', 'black', 90, 45, ctx, 'START', 'Start');
     const difficultyButton = new Button(x, y + difficultyTop, 'rgb(57, 202, 202)', 'black', 90, 45, ctx, 'DIFFICULTY', 'Easy');
-    const settingsButton = new Button(x, y + settingsTop, 'rgb(57, 202, 202)', 'black', 120, 45, ctx, 'SETTINGS', 'Settings');
-    settingsButton.render();
+    const controlsButton = new Button(x, y + settingsTop, 'rgb(57, 202, 202)', 'black', 120, 45, ctx, 'CONTROLS', 'Controls');
+    const gameTitle = new Text(x, y - 200, "Bugs War", 500, ctx, 'black', '75px times-new-roman');
+    const gameVersion = new Text(85, y * 2 - 17, version, 150, ctx, 'black', '20px times-new-roman');
+
+    // image.onload = function() {
+        // ctx.drawImage(image, 0, 0, myGame.canvas.width, myGame.canvas.height);
+    // }
+    controlsButton.render();
     startButton.render();
     difficultyButton.render();
-
-    const gameTitle = new Text(x, y - 125, "Bugs War", 500, ctx, 'black', '75px times-new-roman');
     gameTitle.render();
-    const gameVersion = new Text(x * 2 - 85, y * 2 - 17, version, 150, ctx, 'black', '20px times-new-roman');
     gameVersion.render();
+    ctx.beginPath();
+    ctx.strokeStyle = 'black';
+    ctx.moveTo(x * 2, 0);
+    ctx.lineTo(x * 2, y * 2);
+    ctx.stroke();
 
-    return [startButton, difficultyButton, settingsButton];
+    return [startButton, difficultyButton, controlsButton];
+}
+
+function difficultyMenu() {
+    const ctx = myGame.context;
+    const startTop = 75;
+    const difficultyTop = 15;
+    const settingsTop = 135;
+    const x = myGame.canvas.width / 2;
+    const y = myGame.canvas.height / 2;
+
 }
 
 function settings(myGame) {
