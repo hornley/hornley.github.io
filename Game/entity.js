@@ -210,7 +210,7 @@ class Enemy {
     };
 };
 
-class Button {
+class TextButton {
     constructor(x, y, fillStyle, textColor, width, height, ctx, id, text=null, round=10) {
         this.id = id;
         this.x = x;
@@ -225,14 +225,12 @@ class Button {
     };
 
     render() {
-        this.ctx.fillStyle = this.fillStyle;
-        this.ctx.beginPath();
-        this.ctx.roundRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height, this.round);
-        this.ctx.fill();
-        if (this.text) { 
+            this.ctx.fillStyle = this.fillStyle;
+            this.ctx.beginPath();
+            this.ctx.roundRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height, this.round);
+            this.ctx.fill();
             const text = new Text(this.x, this.y, this.text, this.width, this.ctx, this.textColor);
             text.render();
-        }
     };
 
     changeSize(width, height) {
@@ -242,6 +240,36 @@ class Button {
 
     changeText(text) {
         this.text = text;
+    };
+
+    onClick(mouseX, mouseY) {
+        return (this.x >= mouseX - this.width / 2 &&
+        this.x <= mouseX + this.width / 2 &&
+        this.y >= mouseY - this.height / 2 &&
+        this.y <= mouseY + this.height / 2);
+    };
+};
+
+class ImageButton {
+    constructor(x, y, width, height, ctx, id, source) {
+        this.id = id;
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.ctx = ctx;
+        this.source = source;
+    };
+
+    render() {
+        let image = new Image();
+        image.src = this.source;
+        let ctx = this.ctx;
+        let x = this.x;
+        let y = this.y;
+        image.onload = function() {
+            ctx.drawImage(image, x, y);
+        }
     };
 
     onClick(mouseX, mouseY) {
@@ -294,10 +322,10 @@ function restart(myGame) {
     ctx.roundRect(x - restartWidth / 2, y - restartHeight / 2 - restartTop, restartWidth, restartHeight, 15);
     ctx.fill();
 
-    const restartText = new Text(x, y - restartTop * 1.2, "Press the button below to restart", 300, ctx, 'black',"30px times-new-roman");
+    const restartText = new Text(x, y - restartTop * 1.2, "Press the TextButton below to restart", 300, ctx, 'black',"30px times-new-roman");
     restartText.render();
 
-    const restartButton = new Button(x, y - restartTop / 2, 'rgba(135, 206, 235, 1)', 'black', 100, 50, ctx, 'RESTART', "Restart");
+    const restartButton = new TextButton(x, y - restartTop / 2, 'rgba(135, 206, 235, 1)', 'black', 100, 50, ctx, 'RESTART', "Restart");
     restartButton.render();
 
     return restartButton;
@@ -312,19 +340,22 @@ function menu(myGame) {
     const y = myGame.canvas.height / 2;
     // let image = new Image();
     // image.src = "../images/background-image.jpeg";
+    // image.onload = function() {
+        // ctx.drawImage(image, 0, 0, myGame.canvas.width, myGame.canvas.height);
+        // put renders here
+    // }
 
-    const startButton = new Button(x, y + startTop, 'rgb(57, 202, 202)', 'black', 90, 45, ctx, 'START', 'Start');
-    const difficultyButton = new Button(x, y + difficultyTop, 'rgb(57, 202, 202)', 'black', 90, 45, ctx, 'DIFFICULTY', 'Easy');
-    const controlsButton = new Button(x, y + settingsTop, 'rgb(57, 202, 202)', 'black', 120, 45, ctx, 'CONTROLS', 'Controls');
+    const startButton = new TextButton(x, y + startTop, 'rgb(57, 202, 202)', 'black', 90, 45, ctx, 'START', 'Start');
+    const difficultyButton = new TextButton(x, y + difficultyTop, 'rgb(57, 202, 202)', 'black', 90, 45, ctx, 'DIFFICULTY', 'Easy');
+    const controlsButton = new TextButton(x, y + settingsTop, 'rgb(57, 202, 202)', 'black', 120, 45, ctx, 'CONTROLS', 'Controls');
+    const patchNotesButton = new ImageButton(x * 1.85, y * 2 - 50, 22, 22, ctx, 'PATCH-NOTES', "../images/Patch-Notes.png");
     const gameTitle = new Text(x, y - 200, "Bugs War", 500, ctx, 'black', '75px times-new-roman');
     const gameVersion = new Text(85, y * 2 - 17, version, 150, ctx, 'black', '20px times-new-roman');
 
-    // image.onload = function() {
-        // ctx.drawImage(image, 0, 0, myGame.canvas.width, myGame.canvas.height);
-    // }
     controlsButton.render();
     startButton.render();
     difficultyButton.render();
+    patchNotesButton.render();
     gameTitle.render();
     gameVersion.render();
     ctx.beginPath();
@@ -333,7 +364,7 @@ function menu(myGame) {
     ctx.lineTo(x * 2, y * 2);
     ctx.stroke();
 
-    return [startButton, difficultyButton, controlsButton];
+    return [startButton, patchNotesButton, controlsButton];
 }
 
 function difficultyMenu() {
@@ -341,9 +372,12 @@ function difficultyMenu() {
     const startTop = 75;
     const difficultyTop = 15;
     const settingsTop = 135;
-    const x = myGame.canvas.width / 2;
+    const x = myGame.canvas.width * .3;
     const y = myGame.canvas.height / 2;
+}
 
+function patchNotes(ctx) {
+    // ctx.
 }
 
 function settings(myGame) {
@@ -385,7 +419,7 @@ function healthBar(game, player) {
 }
 
 export {
-    Button,
+    TextButton,
     Enemy,
     Bullet,
     Player,
@@ -393,5 +427,7 @@ export {
     restart,
     menu,
     settings,
-    healthBar
+    healthBar,
+    patchNotes,
+    difficultyMenu
 };

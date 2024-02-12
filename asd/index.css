@@ -1,0 +1,62 @@
+body {
+    position: absolute;
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 100%;
+    font-family: 'Times New Roman', Times, serif;
+    background-color: beige;
+}
+
+.Submission {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 20%;
+    height: 80%;
+    border: 1px solid black;
+    box-shadow: 5px 5px 15px 5px;
+}
+
+.Submission * {
+    margin: 5px;
+}
+
+.agentSelection {
+    width: 20%;
+}
+
+textarea {
+    width: 50%;
+}
+
+.submitButton {
+    width: 75px;
+    height: 20px;
+}
+
+.agentInput {
+    width: 30%;
+}
+
+.Table {
+    margin-left: 20px;
+    width: 70%;
+    height: 80%;
+    border: 1px solid black;
+    box-shadow: 5px 5px 15px 5px;
+}
+
+table {
+    width: 100%;
+    border-spacing: 0;
+    font-size: 20px;
+}
+
+table, th, td {
+    border: 1px solid black;
+}
+
+select {
+    width: 20%;
+}

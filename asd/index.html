@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hornley (Project)</title>
+    <link rel="stylesheet" href="index.css">
+    <script src="index.js"></script>
+  </head>
+
+  <body>
+    <div class="Submission">
+        <label>
+            Type Agent
+        </label>
+        <input type="text" class="agentInput" id="Agent">
+        <label>
+          Mode of Payment
+        </label>
+        <select id="MOP">
+          <option>
+            GCASH
+          </option>
+          <option>STC</option>
+        </select>
+        <label>
+            Combinations
+        </label>
+        <textarea name="bets" id="Bets" cols="30" rows="10"></textarea>
+        <input class="submitButton"type="button" value="Submit" onclick="submit()">
+        <a onclick="jsonify(this)">Export JSON</a>
+    </div>
+    <div class="Table">
+        <table id="table">
+            <tr>
+                <th style="width: 6%">#</th>
+                <th>Agent</th>
+                <th>Bettor</th>
+                <th>N1</th>
+                <th>N2</th>
+                <th>N3</th>
+                <th style="width: 15%">Amount</th>
+                <th>Type</th>
+                <th>Mode</th>
+                <th>Date</th>
+            </tr>
+        </table>
+    </div>
+  </body>
+</html>

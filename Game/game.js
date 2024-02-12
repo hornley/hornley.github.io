@@ -1,4 +1,4 @@
-import { Enemy, Player, restart, menu, healthBar, Text } from "./entity.js";
+import { Enemy, Player, restart, menu, healthBar, Text, difficultyMenu, patchNotes } from "./entity.js";
 import { upgradeMenu, upgradeBulletDamage, upgradeBulletPenetration, upgradeHealth, upgradeAttackSpeed, upgradeMovementSpeed } from "./upgrades.js";
 
 const moves = ['w', 'a', 's', 'd'];
@@ -306,6 +306,10 @@ function eventListener(game) {
                 case 'DIFFICULTY':
                     button = difficulty(button);
                     button.render();
+                    pressed = true;
+                    break;
+                case 'PATCH-NOTES':
+                    
                     pressed = true;
                     break;
                 case 'UPGRADE':

@@ -1,4 +1,4 @@
-import { Text, Button } from "./entity.js";
+import { Text, TextButton } from "./entity.js";
 
 let statPointsText;
 const upgradeBGColor = 'rgb(76, 76, 109)';
@@ -13,9 +13,9 @@ const buttonConfig = [
 
 function renderUpgradeButtons(game, cw, ch, player) {
     const buttons = buttonConfig.map(({ key, text, y }) => {
-        const button = new Button(cw/2, ch + y, upgradeBGColor, upgradeTextColor, key.length * 10, 25, game.context, key, text, 5);
-        button.render();
-        return button;
+        const TextButton = new TextButton(cw/2, ch + y, upgradeBGColor, upgradeTextColor, key.length * 10, 25, game.context, key, text, 5);
+        TextButton.render();
+        return TextButton;
     });
     statPointsText = new Text(cw/2 - 130, ch - 380, player.statPoints, 25, game.context, upgradeTextColor);
     statPointsText.render();
@@ -34,7 +34,7 @@ function upgradeMenu(game, player=null) {
         context.fill();
         return renderUpgradeButtons(game, cw, ch, player);
     } else {
-        const upgradeMenuButton = new Button(cw/2, ch - 35, upgradeBGColor, upgradeTextColor, 100, 25, context, "UPGRADE", "Upgrade", 5);
+        const upgradeMenuButton = new TextButton(cw/2, ch - 35, upgradeBGColor, upgradeTextColor, 100, 25, context, "UPGRADE", "Upgrade", 5);
         upgradeMenuButton.render();
         return upgradeMenuButton;
     }
