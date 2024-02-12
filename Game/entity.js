@@ -15,6 +15,23 @@ enemyImage.src = enemySprite;
 let idleFrame = 0;
 const version = 'Version: 0.2.1-alpha';
 
+class Sound {
+    constructor(src) {
+        this.sound = document.createElement('audio');
+        this.sound.src = src;
+        this.sound.setAttribute("preload", "auto");
+        this.sound.setAttribute("controls", "none");
+        this.sound.style.display = "none";
+        document.body.appendChild(this.sound);
+    }
+    play() {
+        this.sound.play();
+    }
+}
+
+let levelUpSound = new Sound('../Audio/level-up.mp3');
+let shootSound = new Sound('../Audio/shoot.mp3');
+
 class Player {
     constructor(game) {
         this.game = game;
@@ -64,6 +81,7 @@ class Player {
         const dx = (x / l) * 10;
         const dy = (y / l) * 10;
         this.lastShot = this.game.frameNo;
+        shootSound.play();
         bullets.push(new Bullet(this.x, this.y, dx, dy, this.game, mouseX, mouseY, this.bulletDamage, this.penetration));
     };
 
@@ -87,6 +105,7 @@ class Player {
 
     checkExp() {
         if (this.experience >= this.experienceRequired) {
+            levelUpSound.play();
             this.level++;
             this.statPoints += 4;
             this.experience -= this.experienceRequired;
@@ -289,22 +308,42 @@ function menu(myGame) {
     const startTop = 75;
     const difficultyTop = 15;
     const settingsTop = 135;
-    const x = myGame.canvas.width / 2;
+    const x = myGame.canvas.width * .15;
     const y = myGame.canvas.height / 2;
+    // let image = new Image();
+    // image.src = "../images/background-image.jpeg";
 
     const startButton = new Button(x, y + startTop, 'rgb(57, 202, 202)', 'black', 90, 45, ctx, 'START', 'Start');
     const difficultyButton = new Button(x, y + difficultyTop, 'rgb(57, 202, 202)', 'black', 90, 45, ctx, 'DIFFICULTY', 'Easy');
-    const settingsButton = new Button(x, y + settingsTop, 'rgb(57, 202, 202)', 'black', 120, 45, ctx, 'SETTINGS', 'Settings');
-    settingsButton.render();
+    const controlsButton = new Button(x, y + settingsTop, 'rgb(57, 202, 202)', 'black', 120, 45, ctx, 'CONTROLS', 'Controls');
+    const gameTitle = new Text(x, y - 200, "Bugs War", 500, ctx, 'black', '75px times-new-roman');
+    const gameVersion = new Text(85, y * 2 - 17, version, 150, ctx, 'black', '20px times-new-roman');
+
+    // image.onload = function() {
+        // ctx.drawImage(image, 0, 0, myGame.canvas.width, myGame.canvas.height);
+    // }
+    controlsButton.render();
     startButton.render();
     difficultyButton.render();
-
-    const gameTitle = new Text(x, y - 125, "Bugs War", 500, ctx, 'black', '75px times-new-roman');
     gameTitle.render();
-    const gameVersion = new Text(x * 2 - 85, y * 2 - 17, version, 150, ctx, 'black', '20px times-new-roman');
     gameVersion.render();
+    ctx.beginPath();
+    ctx.strokeStyle = 'black';
+    ctx.moveTo(x * 2, 0);
+    ctx.lineTo(x * 2, y * 2);
+    ctx.stroke();
 
-    return [startButton, difficultyButton, settingsButton];
+    return [startButton, difficultyButton, controlsButton];
+}
+
+function difficultyMenu() {
+    const ctx = myGame.context;
+    const startTop = 75;
+    const difficultyTop = 15;
+    const settingsTop = 135;
+    const x = myGame.canvas.width / 2;
+    const y = myGame.canvas.height / 2;
+
 }
 
 function settings(myGame) {

@@ -273,7 +273,7 @@ function upgrade() {
         upgradeMenus = upgradeMenu(game, player_object);
         buttons.push(upgradeMenus[0], upgradeMenus[1], upgradeMenus[2], upgradeMenus[3], upgradeMenus[4]);
     }
-    pause();
+        pause();
 }
 
 function eventListener(game) {
@@ -299,7 +299,7 @@ function eventListener(game) {
                     game.start();
                     pressed = true;
                     break;
-                case 'SETTINGS':
+                case 'CONTROLS':
                     game.settings();
                     pressed = true;
                     break;
