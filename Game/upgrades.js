@@ -13,9 +13,9 @@ const buttonConfig = [
 
 function renderUpgradeButtons(game, cw, ch, player) {
     const buttons = buttonConfig.map(({ key, text, y }) => {
-        const TextButton = new TextButton(cw/2, ch + y, upgradeBGColor, upgradeTextColor, key.length * 10, 25, game.context, key, text, 5);
-        TextButton.render();
-        return TextButton;
+        const UpgradeButton = new TextButton(cw/2, ch + y, upgradeBGColor, upgradeTextColor, key.length * 10, 25, game.context, key, text, 5);
+        UpgradeButton.render();
+        return UpgradeButton;
     });
     statPointsText = new Text(cw/2 - 130, ch - 380, player.statPoints, 25, game.context, upgradeTextColor);
     statPointsText.render();

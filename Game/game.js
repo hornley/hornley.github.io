@@ -1,11 +1,11 @@
-import { Enemy, Player, restart, menu, healthBar, Text, difficultyMenu, patchNotes } from "./entity.js";
+import { Enemy, Player, restart, menu, healthBar, Text, difficultyMenu, difficultyDescription, patchNotes, controls } from "./entity.js";
 import { upgradeMenu, upgradeBulletDamage, upgradeBulletPenetration, upgradeHealth, upgradeAttackSpeed, upgradeMovementSpeed } from "./upgrades.js";
 
 const moves = ['w', 'a', 's', 'd'];
 
 // Difficulty rampage
 let gameDifficulty = 'Easy';
-const difficulties = {'Easy': 1.15, 'Medium': 1.3, 'Hard': 1.5, ':)': 2, 'Dodge Only': 5};
+const difficulties = {'Easy': 1.15, 'Medium': 1.3, 'Hard': 1.5, 'Impossible': 2, 'Dodge Only': 5};
 let gameRound;
 let gameRounds = {0: true, 1: false};
 
@@ -21,24 +21,32 @@ let enemySpeed = 0.5; // ***
 let enemyHealth = 1; // ***
 let enemyCollisionDamage = 5; // ***
 
+// FPS and Time
 const fps = 60;
 const interval = 1000/fps;
 let now;
 let then = Date.now();
 let delta;
+let lastSpawn = -1;
 
-let score = 0;
+// MouseClickEvents and Shooting toggles
+let mouseDownTimeout;
+let mouseDown;
 let mouseX = 0.0;
 let mouseY = 0.0;
+let toggleShoot;
+let toggleText;
+let keypresses;
+
+// Game Objects and Variables
+let player_object;
+let score = 0;
 let ongoingGame = true;
 let paused = false;
 let enemies = [];
 let bullets = [];
 let buttons = [];
-let lastSpawn = -1;
-let keypresses;
-let player_object;
-let upgradeMenus;
+
 let game = {
     canvas: document.getElementById("canvas"),
     menu: function() {
@@ -46,7 +54,7 @@ let game = {
         this.canvas.height = this.canvas.offsetHeight;
         this.context = this.canvas.getContext("2d");
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.context.fillStyle = 'rgba(30, 178, 54, 0.9)';
+        this.context.fillStyle = '#41980a';
         this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
         this.frameNo = 0;
 
@@ -65,6 +73,10 @@ let game = {
             if (e.key === " ") {
                 upgrade();
             }
+
+            if ((e.key === 'r' || e.key === 'R') && !ongoingGame) {
+                game.restart();
+            }
         });
         
         window.addEventListener('keyup', function(e) {
@@ -77,10 +89,8 @@ let game = {
         buttons.push(upgradeMenu(game));
         loop();
     },
-    settings: function() {
-        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.context.fillStyle = 'rgba(30, 178, 54, 0.9)';
-        this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    controls: function() {
+        controls(game);
     },
     clear: function() {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -96,6 +106,7 @@ let game = {
     },
     restart: function() {
         this.canvas.style.cursor = 'none';
+        toggleShoot = false;
         spawnRate = 250;
         enemySpeed = 0.5;
         enemyHealth = 2;
@@ -117,15 +128,15 @@ let game = {
         this.context = null;
     },
     updateTexts: function() {
-        this.context.clearRect(0, 0, 150, 35);
+        this.context.clearRect(0, 0, 120, 60);
         this.context.fillStyle = "rgba(240, 248, 255, 1)";
-        this.context.fillRect(0, 0, 150, 35);
+        this.context.fillRect(0, 0, 120, 60);
         this.context.font = "24px times-new-roman";
         this.context.textAlign = 'left';
         this.context.textBaseline = 'middle';
         this.context.fillStyle = "black";
-        let score_message = "Score: " + score;
-        this.context.fillText(score_message, 10, 25);
+        this.context.fillText(`Score: ${score}`, 10, 25);
+        this.context.fillText(`Round: ${gameRound + 1}`, 10, 50);
         healthBar(game, player_object);
     }
 };
@@ -164,8 +175,102 @@ function pause() {
     loop();
 }
 
+function move() {
+    keypresses = keypresses || [];
+
+    const directions = { w: 0, a: 0, s: 0, d: 0 };
+    const diagonal = keypresses.filter((key) => directions[key]).length === 2;
+
+    player_object.x += (keypresses["a"] ? -player_object.speed : keypresses["d"] ? player_object.speed : 0);
+    player_object.y += (keypresses["w"] ? -player_object.speed : keypresses["s"] ? player_object.speed : 0);
+}
+
+function increaseDifficulty() {
+    gameRound = Math.floor(player_object.level / 2);
+    let difficultyRatio = difficulties[gameDifficulty];
+    if (!gameRounds[gameRound]) {
+        enemySpeed *= difficultyRatio;
+        enemyHealth += Math.floor(difficultyRatio * 1.5);
+        enemyCollisionDamage *= difficultyRatio;
+        spawnRate /= difficultyRatio;
+        gameRounds[gameRound++] = true;
+        gameRounds[gameRound++] = false;
+        return true;
+    }
+}
+
+function upgrade() {
+    game.canvas.style.cursor = (game.canvas.style.cursor === 'auto') ? 'none' : 'auto';
+    if (player_object.statPoints >= 1) {
+        upgradeMenu(game, player_object).forEach((button) => {
+            buttons.push(button);
+        })
+    }
+    pause();
+}
+
+function difficultyToggle(button) {
+    difficultyDescription(button.text);
+    gameDifficulty = button.text;
+    game.start();
+}
+
+function buttonsOnClick() {
+    let pressed = false;
+    buttons.forEach((button) => {
+        if (!button.onClick(mouseX, mouseY) || pressed) { return; }
+        switch (button.id) {
+            case 'RESTART':
+                game.restart();
+                pressed = true;
+                break;
+            case 'START':
+                difficultyMenu(game).forEach((button) => {
+                    buttons.push(button);
+                })
+                pressed = true;
+                break;
+            case 'CONTROLS':
+                game.controls();
+                pressed = true;
+                break;
+            case 'PATCH-NOTES':
+                
+                pressed = true;
+                break;
+            case 'UPGRADE':
+                upgrade();
+                break;
+            case 'UPGRADE-HEALTH':
+                upgradeHealth(player_object);
+                pressed = true;
+                break;
+            case 'UPGRADE-BULLET_DAMAGE':
+                upgradeBulletDamage(player_object);
+                pressed = true;
+                break;
+            case 'UPGRADE-BULLET_PENETRATION':
+                upgradeBulletPenetration(player_object);
+                pressed = true;
+                break;
+            case 'UPGRADE-ATTACK_SPEED':
+                upgradeAttackSpeed(player_object);
+                pressed = true;
+                break;
+            case 'UPGRADE-MOVEMENT_SPEED':
+                upgradeMovementSpeed(player_object);
+                pressed = true;
+                break;
+            case 'DIFFICULTY':
+                difficultyToggle(button);
+                pressed = true;
+                break;
+        }
+    });
+}
+
 function updateGame() {
-    increaseDifficulty();
+    let newRound = increaseDifficulty();
     let time = Date.now();
     spawnEnemy(time);    
 
@@ -174,6 +279,11 @@ function updateGame() {
     player_object.render(mouseX, mouseY);
     cursor();
     enemies = player_object.AoE(time, enemies);
+
+    if (ongoingGame && player_object && !paused && (mouseDown || toggleShoot)) {
+        player_object.shoot(mouseX, mouseY, bullets);
+        (toggleShoot) ? toggleText.render() : '';
+    };
 
     for (let i = 0; i < bullets.length; i++) {
         let bullet = bullets[i];
@@ -199,7 +309,8 @@ function updateGame() {
         }
 
         bullets.forEach((bullet, index) => {
-            if (enemy.collide(bullet)) {
+            if (enemy.collide(bullet) && !bullet.isHit(enemy)) {
+                bullet.hits.push(enemy);
                 bullet.penetration -= 1;
                 enemy.health -= player_object.bulletDamage;
                 if (enemy.health <= 0) enemies.splice(i, 1); score++; player_object.experience++;
@@ -222,121 +333,26 @@ function updateGame() {
     }
 }
 
-function move() {
-    keypresses = keypresses || [];
-
-    const directions = { w: 0, a: 0, s: 0, d: 0 };
-    const diagonal = keypresses.filter((key) => directions[key]).length === 2;
-
-    player_object.x += (keypresses["a"] ? -player_object.speed : keypresses["d"] ? player_object.speed : 0);
-    player_object.y += (keypresses["w"] ? -player_object.speed : keypresses["s"] ? player_object.speed : 0);
-}
-
-function increaseDifficulty() {
-    gameRound = Math.floor(player_object.level / 2);
-    let difficultyRatio = difficulties[gameDifficulty];
-    if (!gameRounds[gameRound]) {
-        enemySpeed *= difficultyRatio;
-        enemyHealth += Math.floor(difficultyRatio * 1.5);
-        enemyCollisionDamage *= difficultyRatio;
-        spawnRate /= difficultyRatio;
-        gameRounds[gameRound++] = true;
-        gameRounds[gameRound++] = false;
-    }
-}
-
-function difficulty(button) {
-    switch (button.text) {
-        case 'Easy':
-            button.text = 'Medium';
-            break;
-        case 'Medium':
-            button.text = 'Hard';
-            break;
-        case 'Hard':
-            button.text = ':)';
-            break;
-        case ':)':
-            button.text = 'Dodge Only';
-            break;
-        case 'Dodge Only':
-            button.text = 'Easy';
-            break;
-    }
-    gameDifficulty = button.text;
-    return button;
-}
-
-function upgrade() {
-    game.canvas.style.cursor = (game.canvas.style.cursor === 'auto') ? 'none' : 'auto';
-    if (player_object.statPoints >= 1) {
-        upgradeMenus = upgradeMenu(game, player_object);
-        buttons.push(upgradeMenus[0], upgradeMenus[1], upgradeMenus[2], upgradeMenus[3], upgradeMenus[4]);
-    }
-        pause();
-}
-
 function eventListener(game) {
     game.canvas.addEventListener('mousemove', function(e) {
         mouseX = e.offsetX;
         mouseY = e.offsetY;
     });
 
+    game.canvas.addEventListener('mouseup', function(e) {
+        mouseDown = false;
+        clearTimeout(mouseDownTimeout);
+    });
+
     game.canvas.addEventListener('mousedown', function(e) {
-        e.preventDefault();
-        if (ongoingGame && player_object && !paused) {
-            player_object.shoot(mouseX, mouseY, bullets);
-        };
-        let pressed = false;
-        buttons.forEach((button) => {
-            if (!button.onClick(mouseX, mouseY) || pressed) { return; }
-            switch (button.id) {
-                case 'RESTART':
-                    game.restart();
-                    pressed = true;
-                    break;
-                case 'START':
-                    game.start();
-                    pressed = true;
-                    break;
-                case 'CONTROLS':
-                    game.settings();
-                    pressed = true;
-                    break;
-                case 'DIFFICULTY':
-                    button = difficulty(button);
-                    button.render();
-                    pressed = true;
-                    break;
-                case 'PATCH-NOTES':
-                    
-                    pressed = true;
-                    break;
-                case 'UPGRADE':
-                    upgrade();
-                    break;
-                case 'UPGRADE-HEALTH':
-                    upgradeHealth(player_object);
-                    pressed = true;
-                    break;
-                case 'UPGRADE-BULLET_DAMAGE':
-                    upgradeBulletDamage(player_object);
-                    pressed = true;
-                    break;
-                case 'UPGRADE-BULLET_PENETRATION':
-                    upgradeBulletPenetration(player_object);
-                    pressed = true;
-                    break;
-                case 'UPGRADE-ATTACK_SPEED':
-                    upgradeAttackSpeed(player_object);
-                    pressed = true;
-                    break;
-                case 'UPGRADE-MOVEMENT_SPEED':
-                    upgradeMovementSpeed(player_object);
-                    pressed = true;
-                    break;
+        mouseDown = true;
+        mouseDownTimeout = setTimeout(function() {
+            if (mouseDown) {
+                toggleShoot = true;
+                toggleText = new Text(game.canvas.width / 2, 25, "Auto Shoot: Enabled", 150, game.context);
             }
-        });
+        }, 5000);
+        buttonsOnClick();
     });
 }
 
