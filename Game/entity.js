@@ -1,4 +1,4 @@
-import { aoe, aoeTime, safeAreaHeight, safeAreaWidth } from "./game.js";
+import { aoe, aoeTime, safeAreaHeight, safeAreaWidth, difficulties } from "./game.js";
 
 let lastTime = -1;
 const spriteWidth = 64;
@@ -227,13 +227,17 @@ class TextButton {
         this.ctx = ctx;
         this.text = text;
         this.round = round;
+        this.opacity = 1;
     };
 
     render() {
+        this.ctx.save();
+        this.ctx.globalAlpha = this.opacity;
         this.ctx.fillStyle = this.fillStyle;
         this.ctx.beginPath();
         this.ctx.roundRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height, this.round);
         this.ctx.fill();
+        this.ctx.restore();
         const text = new Text(this.x, this.y, this.text, this.width, this.ctx, this.textColor);
         text.render();
     };
@@ -245,6 +249,10 @@ class TextButton {
 
     changeText(text) {
         this.text = text;
+    };
+
+    changeOpacity(opacity) {
+        this.opacity = opacity;
     };
 
     onClick(mouseX, mouseY) {
@@ -399,8 +407,31 @@ function difficultyMenu(myGame) {
 }
 
 // Continue from here to patchNotes()
-function difficultyDescription(difficulty) {
+function difficultyDescription(difficulty, myGame) {
+    const ctx = myGame.context;
+    const ratio = difficulties[difficulty];
+    const x = myGame.canvas.width * .3 + 200;
+    const y = 150;
+    const descriptionBoxWidth = 650;
+    const descriptionBoxHeight = 500;
 
+    ctx.fillStyle = '#41980a';
+    ctx.roundRect(x, y, descriptionBoxWidth, descriptionBoxHeight, 10);
+    ctx.stroke();
+    ctx.fill();
+
+    const EnemySpeed = new Text(x + 25, y + 50, `Enemy Speed: ${ratio}x of previous`, 500, ctx, 'black', '24px times-new-roman', 'left');
+    const EnemyHealth = new Text(x + 25, y + 100, `Enemy Health: ${ratio}x of previous`, 500, ctx, 'black', '24px times-new-roman', 'left');
+    const EnemyDamage = new Text(x + 25, y + 150, `Enemy Damage: ${ratio}x of previous`, 500, ctx, 'black', '24px times-new-roman', 'left');
+    const SpawnRate = new Text(x + 25, y + 200, `Spawn Rate: ${ratio}x of previous`, 500, ctx, 'black', '24px times-new-roman', 'left');
+    EnemySpeed.render();
+    EnemyHealth.render();
+    EnemyDamage.render();
+    SpawnRate.render();
+
+    const StartButton = new TextButton(x + 550, y + 450, 'rgb(57, 202, 202)', 'black', 120, 45, ctx, 'START-GAME', 'Start');
+    StartButton.render();
+    return StartButton;
 }
 
 function patchNotes() {

@@ -16,7 +16,7 @@ let aoeTime = 250; // ***&
 let aoe = false; // ***&
 let safeAreaWidth = 200; // ***&
 let safeAreaHeight = 200; // ***&
-let spawnRate = 250; // ***
+let spawnRate = 250; // **bbb
 let enemySpeed = 0.5; // ***
 let enemyHealth = 1; // ***
 let enemyCollisionDamage = 5; // ***
@@ -76,6 +76,10 @@ let game = {
 
             if ((e.key === 'r' || e.key === 'R') && !ongoingGame) {
                 game.restart();
+            }
+
+            if (parseInt(e.key)) {
+                upgradeHotkeys(e.key);
             }
         });
         
@@ -189,10 +193,10 @@ function increaseDifficulty() {
     gameRound = Math.floor(player_object.level / 2);
     let difficultyRatio = difficulties[gameDifficulty];
     if (!gameRounds[gameRound]) {
-        enemySpeed *= difficultyRatio;
-        enemyHealth += Math.floor(difficultyRatio * 1.5);
-        enemyCollisionDamage *= difficultyRatio;
-        spawnRate /= difficultyRatio;
+        enemySpeed = Math.log(gameRound + 1) * (difficultyRatio/1.5);
+        enemyHealth = 1  + Math.log(gameRound + 1) * (difficultyRatio/1.5);
+        enemyCollisionDamage = 5 + Math.log(gameRound + 1) * (difficultyRatio/1.5);
+        spawnRate = 250 / Math.log(gameRound + 1) * (difficultyRatio/1.5);
         gameRounds[gameRound++] = true;
         gameRounds[gameRound++] = false;
         return true;
@@ -209,10 +213,39 @@ function upgrade() {
     pause();
 }
 
+function upgradeHotkeys(key) {
+    console.log(key);
+    switch (parseInt(key)) {
+        case 1:
+            upgradeHealth(player_object);
+            break;
+        case 2:
+            upgradeBulletDamage(player_object);
+            break;
+        case 3:
+            upgradeBulletPenetration(player_object);
+            break;
+        case 4:
+            upgradeAttackSpeed(player_object);   
+            break;
+        case 5:
+            upgradeMovementSpeed(player_object);
+            break;
+    }
+
+}
+
 function difficultyToggle(button) {
-    difficultyDescription(button.text);
+    buttons.push(difficultyDescription(button.text, game));
+    button.changeOpacity(1);
+    game.context.clearRect(game.canvas.width * .3 + 5, 150, 180, 500);
+    game.context.fillStyle = '#41980a';
+    game.context.fillRect(game.canvas.width * .3 + 5, 150, 181, 500);
+    buttons.forEach((x) => {
+        if (x.id === 'DIFFICULTY' && x.text !== button.text) x.changeOpacity(0.4);
+        if (x.id === 'DIFFICULTY') x.render();
+    });
     gameDifficulty = button.text;
-    game.start();
 }
 
 function buttonsOnClick() {
@@ -228,6 +261,10 @@ function buttonsOnClick() {
                 difficultyMenu(game).forEach((button) => {
                     buttons.push(button);
                 })
+                pressed = true;
+                break;
+            case 'START-GAME':
+                game.start();
                 pressed = true;
                 break;
             case 'CONTROLS':
@@ -376,5 +413,6 @@ export {
     aoe,
     aoeTime,
     safeAreaHeight,
-    safeAreaWidth
+    safeAreaWidth,
+    difficulties
 }
