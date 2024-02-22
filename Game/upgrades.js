@@ -22,6 +22,17 @@ function renderUpgradeButtons(game, cw, ch, player) {
     return buttons;
 }
 
+function playerStats(game) {
+    const { canvas, context } = game;
+    const cw = canvas.width;
+    const ch = canvas.height;
+
+    context.beginPath();
+    context.fillStyle = upgradeBGColor;
+    context.roundRect(50, ch - 400, 300, 350, 10);
+    context.fill();
+}
+
 function upgradeMenu(game, player=null) {
     const { canvas, context } = game;
     const cw = canvas.width;
@@ -32,6 +43,7 @@ function upgradeMenu(game, player=null) {
         context.fillStyle = upgradeBGColor;
         context.roundRect(cw/2 - 150, ch - 400, 300, 350, 10);
         context.fill();
+        playerStats(game);
         return renderUpgradeButtons(game, cw, ch, player);
     } else {
         const upgradeMenuButton = new TextButton(cw/2, ch - 35, upgradeBGColor, upgradeTextColor, 100, 25, context, "UPGRADE", "Upgrade", 5);

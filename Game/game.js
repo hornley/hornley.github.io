@@ -350,7 +350,7 @@ function updateGame() {
                 bullet.hits.push(enemy);
                 bullet.penetration -= 1;
                 enemy.health -= player_object.bulletDamage;
-                if (enemy.health <= 0) enemies.splice(i, 1); score++; player_object.experience++;
+                if (enemy.health <= 0) enemies.splice(i, 1); score++; player_object.experience += 10;
                 if (bullet.penetration <= 0) bullets.splice(index, 1);
             }
         })

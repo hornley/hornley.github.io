@@ -229,6 +229,7 @@ class TextButton {
         this.round = round;
         this.opacity = 1;
     };
+    
 
     render() {
         this.ctx.save();
@@ -402,7 +403,6 @@ function difficultyMenu(myGame) {
     // Impossible.render();
     // DodgeOnly.render();
     // Custom.render();
-    // buttons.push([Easy, Medium, Hard, Impossible, DodgeOnly, Custom]);
     return [Easy, Medium, Hard];
 }
 
