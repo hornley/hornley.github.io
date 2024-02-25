@@ -17,8 +17,6 @@ function renderUpgradeButtons(game, cw, ch, player) {
         UpgradeButton.render();
         return UpgradeButton;
     });
-    statPointsText = new Text(75, ch - 370, player.statPoints, 25, game.context, upgradeTextColor);
-    statPointsText.render();
     return buttons;
 }
 
@@ -31,6 +29,9 @@ function playerStats(game, player) {
     context.fillStyle = upgradeBGColor;
     context.roundRect(50, ch - 400, 300, 350, 10);
     context.fill();
+    
+    statPointsText = new Text(75, ch - 370, player.statPoints, 25, game.context, upgradeTextColor);
+    statPointsText.render();
 
     const MaxHealthText = new Text(75, ch - 330, `Max Health: ${(player.maxHealth).toFixed(0)}`, 250, context, upgradeTextColor, '24px times-new-roman', 'left');
     MaxHealthText.render();
