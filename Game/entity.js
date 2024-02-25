@@ -13,7 +13,7 @@ const enemySprite = "../images/Enemy.png";
 let enemyImage = new Image();
 enemyImage.src = enemySprite;
 let idleFrame = 0;
-const version = 'Version: 0.2.1-alpha';
+const version = 'Version: 0.3.0-alpha';
 
 class Sound {
     constructor(src) {
