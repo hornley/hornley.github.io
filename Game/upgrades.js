@@ -1,28 +1,28 @@
-import { Text, TextButton } from "./entity.js";
+import { Text, TextButton, ImageButton } from "./entity.js";
 
 let statPointsText;
 const upgradeBGColor = 'rgb(76, 76, 109)';
 const upgradeTextColor = 'rgb(232, 246, 239)';
 const buttonConfig = [
-    { key: "UPGRADE-HEALTH", text: "Upgrade Health", y: -350 },
-    { key: "UPGRADE-BULLET_DAMAGE", text: "Upgrade Bullet Damage", y: -310 },
-    { key: "UPGRADE-BULLET_PENETRATION", text: "Upgrade Bullet Penetration", y: -270 },
-    { key: "UPGRADE-ATTACK_SPEED", text: "Upgrade Attack Speed", y: -230 },
-    { key: "UPGRADE-MOVEMENT_SPEED", text: "Upgrade Movement Speed", y: -190 }
+    { key: "UPGRADE-HEALTH", text: "Max Health", y: -350 },
+    { key: "UPGRADE-BULLET_DAMAGE", text: "Bullet Damage", y: -310 },
+    { key: "UPGRADE-BULLET_PENETRATION", text: "Bullet Penetration", y: -270 },
+    { key: "UPGRADE-ATTACK_SPEED", text: "Attack Speed", y: -230 },
+    { key: "UPGRADE-MOVEMENT_SPEED", text: "Movement Speed", y: -190 }
 ];
 
 function renderUpgradeButtons(game, cw, ch, player) {
     const buttons = buttonConfig.map(({ key, text, y }) => {
-        const UpgradeButton = new TextButton(cw/2, ch + y, upgradeBGColor, upgradeTextColor, key.length * 10, 25, game.context, key, text, 5);
+        const UpgradeButton = new ImageButton(315, ch + y + 15, 26, 26, game.context, key, "../images/UpgradeButton.png");
         UpgradeButton.render();
         return UpgradeButton;
     });
-    statPointsText = new Text(cw/2 - 130, ch - 380, player.statPoints, 25, game.context, upgradeTextColor);
+    statPointsText = new Text(75, ch - 370, player.statPoints, 25, game.context, upgradeTextColor);
     statPointsText.render();
     return buttons;
 }
 
-function playerStats(game) {
+function playerStats(game, player) {
     const { canvas, context } = game;
     const cw = canvas.width;
     const ch = canvas.height;
@@ -31,6 +31,17 @@ function playerStats(game) {
     context.fillStyle = upgradeBGColor;
     context.roundRect(50, ch - 400, 300, 350, 10);
     context.fill();
+
+    const MaxHealthText = new Text(75, ch - 330, `Max Health: ${(player.maxHealth).toFixed(0)}`, 250, context, upgradeTextColor, '24px times-new-roman', 'left');
+    MaxHealthText.render();
+    const BulletDamageText = new Text(75, ch - 290, `Bullet Damage: ${(player.bulletDamage).toFixed(0)}`, 250, context, upgradeTextColor, '24px times-new-roman', 'left');
+    BulletDamageText.render();
+    const BulletPenetrationText = new Text(75, ch - 250, `Bullet Penetration: ${(player.penetration).toFixed(0)}`, 250, context, upgradeTextColor, '24px times-new-roman', 'left');
+    BulletPenetrationText.render();
+    const AttackSpeedText = new Text(75, ch - 210, `Attack Speed: ${(player.attackSpeed).toFixed(0)}`, 250, context, upgradeTextColor, '24px times-new-roman', 'left');
+    AttackSpeedText.render();
+    const MovementSpeedText = new Text(75, ch - 170, `Movement Speed: ${(player.speed).toFixed(0)}`, 250, context, upgradeTextColor, '24px times-new-roman', 'left');
+    MovementSpeedText.render();
 }
 
 function upgradeMenu(game, player=null) {
@@ -39,11 +50,7 @@ function upgradeMenu(game, player=null) {
     const ch = canvas.height;
 
     if (player) {
-        context.beginPath();
-        context.fillStyle = upgradeBGColor;
-        context.roundRect(cw/2 - 150, ch - 400, 300, 350, 10);
-        context.fill();
-        playerStats(game);
+        playerStats(game, player);
         return renderUpgradeButtons(game, cw, ch, player);
     } else {
         const upgradeMenuButton = new TextButton(cw/2, ch - 35, upgradeBGColor, upgradeTextColor, 100, 25, context, "UPGRADE", "Upgrade", 5);
@@ -52,32 +59,31 @@ function upgradeMenu(game, player=null) {
     }
 }
 
-function upgradeAttribute(player, attribute, multiplier, increment=1) {
+function upgradeAttribute(player, attribute, increment) {
     if (player.statPoints <= 0) return;
-    player[attribute] *= multiplier;
     if (increment !== undefined) player[attribute] += increment;
     player.statPoints -= 1;
     statPointsText.update(player.statPoints);
 }
 
 function upgradeHealth(player) {
-    upgradeAttribute(player, 'maxHealth', 1.15);
+    upgradeAttribute(player, 'maxHealth', 5);
 }
 
 function upgradeBulletDamage(player) {
-    upgradeAttribute(player, 'bulletDamage', 1.1);
+    upgradeAttribute(player, 'bulletDamage', 0.5);
 }
 
 function upgradeBulletPenetration(player) {
-    upgradeAttribute(player, 'penetration', 1, 1);
+    upgradeAttribute(player, 'penetration', 1);
 }
 
 function upgradeAttackSpeed(player) {
-    upgradeAttribute(player, 'attackSpeed', 1.15);
+    upgradeAttribute(player, 'attackSpeed', 0.25);
 }
 
 function upgradeMovementSpeed(player) {
-    upgradeAttribute(player, 'speed', 1, 1);
+    upgradeAttribute(player, 'speed', 0.2);
 }
 
 export {
@@ -86,5 +92,6 @@ export {
     upgradeBulletDamage,
     upgradeBulletPenetration,
     upgradeAttackSpeed,
-    upgradeMovementSpeed
+    upgradeMovementSpeed,
+    playerStats
 };

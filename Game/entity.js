@@ -282,7 +282,7 @@ class ImageButton {
         let x = this.x;
         let y = this.y;
         image.onload = function() {
-            ctx.drawImage(image, x, y);
+            ctx.drawImage(image, x - this.width/2, y - this.height/2);
         }
     };
 
@@ -360,7 +360,7 @@ function menu(myGame) {
 
     const startButton = new TextButton(x, y + startTop, 'rgb(57, 202, 202)', 'black', 90, 45, ctx, 'START', 'Start');
     const controlsButton = new TextButton(x, y + settingsTop, 'rgb(57, 202, 202)', 'black', 120, 45, ctx, 'CONTROLS', 'Controls');
-    const patchNotesButton = new ImageButton(x * 1.85, y * 2 - 50, 22, 22, ctx, 'PATCH-NOTES', "../images/Patch-Notes.png");
+    const patchNotesButton = new ImageButton(x * 1.9, y * 2 - 50, 22, 22, ctx, 'PATCH-NOTES', "../images/Patch-Notes.png");
     const gameTitle = new Text(x, y - 200, "Bugs War", 500, ctx, 'black', '75px times-new-roman');
     const gameVersion = new Text(85, y * 2 - 17, version, 150, ctx, 'black', '20px times-new-roman');
 
@@ -393,17 +393,17 @@ function difficultyMenu(myGame) {
     const Easy = new TextButton(x + 100, 200, 'rgb(57, 202, 202)', 'black', 120, 45, ctx, 'DIFFICULTY', 'Easy');
     const Medium = new TextButton(x + 100, 275, 'rgb(57, 202, 202)', 'black', 120, 45, ctx, 'DIFFICULTY', 'Medium');
     const Hard = new TextButton(x + 100, 350, 'rgb(57, 202, 202)', 'black', 120, 45, ctx, 'DIFFICULTY', 'Hard');
-    // const Impossible = new TextButton(x + 100, 425, 'rgb(57, 202, 202)', 'black', 120, 45, ctx, 'IMPOSSIBLE', 'Impossible');
+    const Impossible = new TextButton(x + 100, 425, 'rgb(57, 202, 202)', 'black', 120, 45, ctx, 'DIFFICULTY', 'Impossible');
     // const DodgeOnly = new TextButton(x + 100, 500, 'rgb(57, 202, 202)', 'black', 120, 45, ctx, 'DODGE-ONLY', 'Dodge Only');
     // const Custom = new TextButton(x + 100, 575, 'rgb(57, 202, 202)', 'black', 120, 45, ctx, 'CUSTOM', 'Custom');
     Title.render();
     Easy.render();
     Medium.render();
     Hard.render();
-    // Impossible.render();
+    Impossible.render();
     // DodgeOnly.render();
     // Custom.render();
-    return [Easy, Medium, Hard];
+    return [Easy, Medium, Hard, Impossible];
 }
 
 // Continue from here to patchNotes()
@@ -424,22 +424,30 @@ function difficultyDescription(difficulty, myGame) {
     const EnemyHealth = new Text(x + 25, y + 100, `Enemy Health: ${ratio}x of previous`, 500, ctx, 'black', '24px times-new-roman', 'left');
     const EnemyDamage = new Text(x + 25, y + 150, `Enemy Damage: ${ratio}x of previous`, 500, ctx, 'black', '24px times-new-roman', 'left');
     const SpawnRate = new Text(x + 25, y + 200, `Spawn Rate: ${ratio}x of previous`, 500, ctx, 'black', '24px times-new-roman', 'left');
+    const ExperienceRate = new Text(x + 25, y + 250, `Experience Rate: +${ratio} per kill`, 500, ctx, 'black', '24px times-new-roman', 'left');
+    const ScoreRate = new Text(x + 25, y + 300, `Score Rate: +${ratio} per kill`, 500, ctx, 'black', '24px times-new-roman', 'left');
     EnemySpeed.render();
     EnemyHealth.render();
     EnemyDamage.render();
     SpawnRate.render();
+    ExperienceRate.render();
+    ScoreRate.render();
 
     const StartButton = new TextButton(x + 550, y + 450, 'rgb(57, 202, 202)', 'black', 120, 45, ctx, 'START-GAME', 'Start');
     StartButton.render();
     return StartButton;
 }
 
-function patchNotes() {
+function patchNotes(myGame) {
     const ctx = myGame.context;
     const x = myGame.canvas.width * .3;
     const y = myGame.canvas.height / 2;
     const width = myGame.canvas.width * .7;
     const height = myGame.canvas.height;
+
+    ctx.clearRect(x, 0, width, height);
+    ctx.fillStyle = '#41980a';
+    ctx.fillRect(x, 0, width, height);
 }
 
 function controls(myGame) {
@@ -495,6 +503,7 @@ function healthBar(game, player) {
 
 export {
     TextButton,
+    ImageButton,
     Enemy,
     Bullet,
     Player,

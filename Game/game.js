@@ -1,13 +1,13 @@
 import { Enemy, Player, restart, menu, healthBar, Text, difficultyMenu, difficultyDescription, patchNotes, controls } from "./entity.js";
-import { upgradeMenu, upgradeBulletDamage, upgradeBulletPenetration, upgradeHealth, upgradeAttackSpeed, upgradeMovementSpeed } from "./upgrades.js";
+import { upgradeMenu, upgradeBulletDamage, upgradeBulletPenetration, upgradeHealth, upgradeAttackSpeed, upgradeMovementSpeed, playerStats } from "./upgrades.js";
 
 const moves = ['w', 'a', 's', 'd'];
 
 // Difficulty rampage
 let gameDifficulty = 'Easy';
-const difficulties = {'Easy': 1.15, 'Medium': 1.3, 'Hard': 1.5, 'Impossible': 2, 'Dodge Only': 5};
+const difficulties = {'Easy': 1, 'Medium': 1.5, 'Hard': 2, 'Impossible': 3, 'Dodge Only': 5};
 let gameRound;
-let gameRounds = {0: true, 1: false};
+let gameRounds = {0: false, 1: false};
 
 /* Base
 & - not affected by rampage
@@ -16,7 +16,7 @@ let aoeTime = 250; // ***&
 let aoe = false; // ***&
 let safeAreaWidth = 200; // ***&
 let safeAreaHeight = 200; // ***&
-let spawnRate = 250; // **bbb
+let spawnRate = 500; // **bbb
 let enemySpeed = 0.5; // ***
 let enemyHealth = 1; // ***
 let enemyCollisionDamage = 5; // ***
@@ -43,6 +43,7 @@ let player_object;
 let score = 0;
 let ongoingGame = true;
 let paused = false;
+let openUpgradeMenu = false;
 let enemies = [];
 let bullets = [];
 let buttons = [];
@@ -78,7 +79,7 @@ let game = {
                 game.restart();
             }
 
-            if (parseInt(e.key)) {
+            if (parseInt(e.key) && openUpgradeMenu) {
                 upgradeHotkeys(e.key);
             }
         });
@@ -111,9 +112,9 @@ let game = {
     restart: function() {
         this.canvas.style.cursor = 'none';
         toggleShoot = false;
-        spawnRate = 250;
+        spawnRate = 500;
         enemySpeed = 0.5;
-        enemyHealth = 2;
+        enemyHealth = 1;
         enemyCollisionDamage = 5;
         buttons = [];
         lastSpawn = -1;
@@ -176,6 +177,7 @@ function loop() {
 
 function pause() {
     paused = !paused;
+    playerStats(game, player_object);
     loop();
 }
 
@@ -193,10 +195,11 @@ function increaseDifficulty() {
     gameRound = Math.floor(player_object.level / 2);
     let difficultyRatio = difficulties[gameDifficulty];
     if (!gameRounds[gameRound]) {
-        enemySpeed = Math.log(gameRound + 1) * (difficultyRatio/1.5);
-        enemyHealth = 1  + Math.log(gameRound + 1) * (difficultyRatio/1.5);
-        enemyCollisionDamage = 5 + Math.log(gameRound + 1) * (difficultyRatio/1.5);
-        spawnRate = 250 / Math.log(gameRound + 1) * (difficultyRatio/1.5);
+        player_object.health = player_object.maxHealth;
+        enemySpeed = 0.5 + 1 * (Math.floor((gameRound + 1) / 5) + 1) * Math.log10(gameRound + 1) * difficultyRatio;
+        enemyHealth = 1 + 3 * (Math.floor((gameRound + 1) / 5) + 1) * Math.log10(gameRound + 1) * difficultyRatio;
+        enemyCollisionDamage = 5 + 1.5 * (Math.floor((gameRound + 1) / 5) + 1) * Math.log10(gameRound + 1) * difficultyRatio;
+        spawnRate = -(Math.log10(gameRound + 1) / 0.005) + 500;
         gameRounds[gameRound++] = true;
         gameRounds[gameRound++] = false;
         return true;
@@ -210,26 +213,31 @@ function upgrade() {
             buttons.push(button);
         })
     }
+    openUpgradeMenu = (player_object.statPoints >= 1) ? !openUpgradeMenu : false;
     pause();
 }
 
 function upgradeHotkeys(key) {
-    console.log(key);
     switch (parseInt(key)) {
         case 1:
             upgradeHealth(player_object);
+            upgradeMenu(game, player_object);
             break;
         case 2:
             upgradeBulletDamage(player_object);
+            upgradeMenu(game, player_object);
             break;
         case 3:
             upgradeBulletPenetration(player_object);
+            upgradeMenu(game, player_object);
             break;
         case 4:
             upgradeAttackSpeed(player_object);   
+            upgradeMenu(game, player_object);
             break;
         case 5:
             upgradeMovementSpeed(player_object);
+            upgradeMenu(game, player_object);
             break;
     }
 
@@ -272,7 +280,7 @@ function buttonsOnClick() {
                 pressed = true;
                 break;
             case 'PATCH-NOTES':
-                
+                patchNotes(game);
                 pressed = true;
                 break;
             case 'UPGRADE':
@@ -280,22 +288,27 @@ function buttonsOnClick() {
                 break;
             case 'UPGRADE-HEALTH':
                 upgradeHealth(player_object);
+                upgradeMenu(game, player_object);
                 pressed = true;
                 break;
             case 'UPGRADE-BULLET_DAMAGE':
                 upgradeBulletDamage(player_object);
+                upgradeMenu(game, player_object);
                 pressed = true;
                 break;
             case 'UPGRADE-BULLET_PENETRATION':
                 upgradeBulletPenetration(player_object);
+                upgradeMenu(game, player_object);
                 pressed = true;
                 break;
             case 'UPGRADE-ATTACK_SPEED':
                 upgradeAttackSpeed(player_object);
+                upgradeMenu(game, player_object);
                 pressed = true;
                 break;
             case 'UPGRADE-MOVEMENT_SPEED':
                 upgradeMovementSpeed(player_object);
+                upgradeMenu(game, player_object);
                 pressed = true;
                 break;
             case 'DIFFICULTY':
@@ -341,8 +354,8 @@ function updateGame() {
 
         if (enemy.health <= 0) {
             enemies.splice(i, 1);
-            score++;
-            player_object.experience++;
+            score += 1 * difficulties[gameDifficulty];
+            player_object.experience += 1 * difficulties[gameDifficulty];
         }
 
         bullets.forEach((bullet, index) => {
@@ -350,7 +363,11 @@ function updateGame() {
                 bullet.hits.push(enemy);
                 bullet.penetration -= 1;
                 enemy.health -= player_object.bulletDamage;
-                if (enemy.health <= 0) enemies.splice(i, 1); score++; player_object.experience += 10;
+                if (enemy.health <= 0) {
+                    enemies.splice(i, 1);
+                    score += 1 * difficulties[gameDifficulty];
+                    player_object.experience += 1 * difficulties[gameDifficulty];
+                }
                 if (bullet.penetration <= 0) bullets.splice(index, 1);
             }
         })
