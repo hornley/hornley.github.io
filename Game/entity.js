@@ -420,16 +420,10 @@ function difficultyDescription(difficulty, myGame) {
     ctx.stroke();
     ctx.fill();
 
-    const EnemySpeed = new Text(x + 25, y + 50, `Enemy Speed: ${ratio}x of previous`, 500, ctx, 'black', '24px times-new-roman', 'left');
-    const EnemyHealth = new Text(x + 25, y + 100, `Enemy Health: ${ratio}x of previous`, 500, ctx, 'black', '24px times-new-roman', 'left');
-    const EnemyDamage = new Text(x + 25, y + 150, `Enemy Damage: ${ratio}x of previous`, 500, ctx, 'black', '24px times-new-roman', 'left');
-    const SpawnRate = new Text(x + 25, y + 200, `Spawn Rate: ${ratio}x of previous`, 500, ctx, 'black', '24px times-new-roman', 'left');
-    const ExperienceRate = new Text(x + 25, y + 250, `Experience Rate: +${ratio} per kill`, 500, ctx, 'black', '24px times-new-roman', 'left');
-    const ScoreRate = new Text(x + 25, y + 300, `Score Rate: +${ratio} per kill`, 500, ctx, 'black', '24px times-new-roman', 'left');
+    const EnemySpeed = new Text(x + 25, y + 50, `Difficulty Ratio: ${ratio}`, 500, ctx, 'black', '24px times-new-roman', 'left');
+    const ExperienceRate = new Text(x + 25, y + 100, `Experience Rate: +${ratio} per kill`, 500, ctx, 'black', '24px times-new-roman', 'left');
+    const ScoreRate = new Text(x + 25, y + 150, `Score Rate: +${ratio} per kill`, 500, ctx, 'black', '24px times-new-roman', 'left');
     EnemySpeed.render();
-    EnemyHealth.render();
-    EnemyDamage.render();
-    SpawnRate.render();
     ExperienceRate.render();
     ScoreRate.render();
 
@@ -466,11 +460,13 @@ function controls(myGame) {
     const Shoot = new Text(x + width / 2, 250, "Click or Hold to shoot (Hold for 5secs to toggle auto shoot)", 600, ctx);
     const Spacebar = new Text(x + width / 2, 300, "Spacebar to open upgrades menu", 300, ctx);
     const Restart = new Text(x + width / 2, 350, "Press 'R' for the restart hotkey.", 300, ctx);
+    const Hotkeys = new Text(x + width / 2, 400, "Press numbers 1-5 respectively for upgrades", 400, ctx);
     Title.render();
     Movement.render();
     Shoot.render();
     Spacebar.render();
     Restart.render();
+    Hotkeys.render();
 }
 
 function experienceBar(experience, experienceRequired, context, gameWidth, gameHeight) {
