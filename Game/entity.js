@@ -1,4 +1,4 @@
-import { aoe, aoeTime, safeAreaHeight, safeAreaWidth } from "./game.js";
+import { aoe, aoeTime, safeAreaHeight, safeAreaWidth, difficulties } from "./game.js";
 
 let lastTime = -1;
 const spriteWidth = 64;
@@ -13,7 +13,7 @@ const enemySprite = "../images/Enemy.png";
 let enemyImage = new Image();
 enemyImage.src = enemySprite;
 let idleFrame = 0;
-const version = 'Version: 0.2.1-alpha';
+const version = 'Version: 0.3.0-alpha';
 
 class Sound {
     constructor(src) {
@@ -25,6 +25,7 @@ class Sound {
         document.body.appendChild(this.sound);
     }
     play() {
+        this.sound.currentTime = 0.2;
         this.sound.play();
     }
 }
@@ -128,6 +129,7 @@ class Bullet {
         this.mouseY = mouseY;
         this.rotation = 0;
         this.penetration = pene;
+        this.hits = [];
     }
 
     tick() {
@@ -142,6 +144,10 @@ class Bullet {
         );
 
         return outOfBounds;
+    }
+
+    isHit(enemy) {
+        return this.hits.includes(enemy);
     }
 
     render() {
@@ -182,7 +188,6 @@ class Enemy {
     };
 
     render(player) {
-
         this.rotation = Math.atan2(player.y - this.y, player.x - this.x) + .2*Math.PI/2;
 
         this.game.context.setTransform(1, 0, 0, 1, this.x, this.y);
@@ -210,8 +215,8 @@ class Enemy {
     };
 };
 
-class Button {
-    constructor(x, y, fillStyle, textColor, width, height, ctx, id, text=null, round=10) {
+class TextButton {
+    constructor(x, y, fillStyle, textColor, width, height, ctx, id, text, round=10) {
         this.id = id;
         this.x = x;
         this.y = y;
@@ -222,17 +227,20 @@ class Button {
         this.ctx = ctx;
         this.text = text;
         this.round = round;
+        this.opacity = 1;
     };
+    
 
     render() {
+        this.ctx.save();
+        this.ctx.globalAlpha = this.opacity;
         this.ctx.fillStyle = this.fillStyle;
         this.ctx.beginPath();
         this.ctx.roundRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height, this.round);
         this.ctx.fill();
-        if (this.text) { 
-            const text = new Text(this.x, this.y, this.text, this.width, this.ctx, this.textColor);
-            text.render();
-        }
+        this.ctx.restore();
+        const text = new Text(this.x, this.y, this.text, this.width, this.ctx, this.textColor);
+        text.render();
     };
 
     changeSize(width, height) {
@@ -242,6 +250,40 @@ class Button {
 
     changeText(text) {
         this.text = text;
+    };
+
+    changeOpacity(opacity) {
+        this.opacity = opacity;
+    };
+
+    onClick(mouseX, mouseY) {
+        return (this.x >= mouseX - this.width / 2 &&
+        this.x <= mouseX + this.width / 2 &&
+        this.y >= mouseY - this.height / 2 &&
+        this.y <= mouseY + this.height / 2);
+    };
+};
+
+class ImageButton {
+    constructor(x, y, width, height, ctx, id, source) {
+        this.id = id;
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.ctx = ctx;
+        this.source = source;
+    };
+
+    render() {
+        let image = new Image();
+        image.src = this.source;
+        let ctx = this.ctx;
+        let x = this.x;
+        let y = this.y;
+        image.onload = function() {
+            ctx.drawImage(image, x - this.width/2, y - this.height/2);
+        }
     };
 
     onClick(mouseX, mouseY) {
@@ -294,10 +336,10 @@ function restart(myGame) {
     ctx.roundRect(x - restartWidth / 2, y - restartHeight / 2 - restartTop, restartWidth, restartHeight, 15);
     ctx.fill();
 
-    const restartText = new Text(x, y - restartTop * 1.2, "Press the button below to restart", 300, ctx, 'black',"30px times-new-roman");
+    const restartText = new Text(x, y - restartTop * 1.2, "Press the TextButton below to restart", 300, ctx, 'black',"30px times-new-roman");
     restartText.render();
 
-    const restartButton = new Button(x, y - restartTop / 2, 'rgba(135, 206, 235, 1)', 'black', 100, 50, ctx, 'RESTART', "Restart");
+    const restartButton = new TextButton(x, y - restartTop / 2, 'rgba(135, 206, 235, 1)', 'black', 100, 50, ctx, 'RESTART', "Restart");
     restartButton.render();
 
     return restartButton;
@@ -305,26 +347,26 @@ function restart(myGame) {
 
 function menu(myGame) {
     const ctx = myGame.context;
-    const startTop = 75;
-    const difficultyTop = 15;
-    const settingsTop = 135;
+    const startTop = 15;
+    const settingsTop = 75;
     const x = myGame.canvas.width * .15;
     const y = myGame.canvas.height / 2;
     // let image = new Image();
     // image.src = "../images/background-image.jpeg";
+    // image.onload = function() {
+        // ctx.drawImage(image, 0, 0, myGame.canvas.width, myGame.canvas.height);
+        // put renders here
+    // }
 
-    const startButton = new Button(x, y + startTop, 'rgb(57, 202, 202)', 'black', 90, 45, ctx, 'START', 'Start');
-    const difficultyButton = new Button(x, y + difficultyTop, 'rgb(57, 202, 202)', 'black', 90, 45, ctx, 'DIFFICULTY', 'Easy');
-    const controlsButton = new Button(x, y + settingsTop, 'rgb(57, 202, 202)', 'black', 120, 45, ctx, 'CONTROLS', 'Controls');
+    const startButton = new TextButton(x, y + startTop, 'rgb(57, 202, 202)', 'black', 90, 45, ctx, 'START', 'Start');
+    const controlsButton = new TextButton(x, y + settingsTop, 'rgb(57, 202, 202)', 'black', 120, 45, ctx, 'CONTROLS', 'Controls');
+    const patchNotesButton = new ImageButton(x * 1.9, y * 2 - 50, 22, 22, ctx, 'PATCH-NOTES', "../images/Patch-Notes.png");
     const gameTitle = new Text(x, y - 200, "Bugs War", 500, ctx, 'black', '75px times-new-roman');
     const gameVersion = new Text(85, y * 2 - 17, version, 150, ctx, 'black', '20px times-new-roman');
 
-    // image.onload = function() {
-        // ctx.drawImage(image, 0, 0, myGame.canvas.width, myGame.canvas.height);
-    // }
     controlsButton.render();
     startButton.render();
-    difficultyButton.render();
+    patchNotesButton.render();
     gameTitle.render();
     gameVersion.render();
     ctx.beginPath();
@@ -333,27 +375,102 @@ function menu(myGame) {
     ctx.lineTo(x * 2, y * 2);
     ctx.stroke();
 
-    return [startButton, difficultyButton, controlsButton];
+    return [startButton, patchNotesButton, controlsButton];
 }
 
-function difficultyMenu() {
+function difficultyMenu(myGame) {
     const ctx = myGame.context;
-    const startTop = 75;
-    const difficultyTop = 15;
-    const settingsTop = 135;
-    const x = myGame.canvas.width / 2;
+    const x = myGame.canvas.width * .3;
     const y = myGame.canvas.height / 2;
+    const width = myGame.canvas.width * .7;
+    const height = myGame.canvas.height;
 
+    ctx.clearRect(x, 0, width, height);
+    ctx.fillStyle = '#41980a';
+    ctx.fillRect(x, 0, width, height);
+    
+    const Title = new Text(x + width / 2, 80, "Difficulty", 200, ctx, 'black', "40px times-new-roman");
+    const Easy = new TextButton(x + 100, 200, 'rgb(57, 202, 202)', 'black', 120, 45, ctx, 'DIFFICULTY', 'Easy');
+    const Medium = new TextButton(x + 100, 275, 'rgb(57, 202, 202)', 'black', 120, 45, ctx, 'DIFFICULTY', 'Medium');
+    const Hard = new TextButton(x + 100, 350, 'rgb(57, 202, 202)', 'black', 120, 45, ctx, 'DIFFICULTY', 'Hard');
+    const Impossible = new TextButton(x + 100, 425, 'rgb(57, 202, 202)', 'black', 120, 45, ctx, 'DIFFICULTY', 'Impossible');
+    // const DodgeOnly = new TextButton(x + 100, 500, 'rgb(57, 202, 202)', 'black', 120, 45, ctx, 'DODGE-ONLY', 'Dodge Only');
+    // const Custom = new TextButton(x + 100, 575, 'rgb(57, 202, 202)', 'black', 120, 45, ctx, 'CUSTOM', 'Custom');
+    Title.render();
+    Easy.render();
+    Medium.render();
+    Hard.render();
+    Impossible.render();
+    // DodgeOnly.render();
+    // Custom.render();
+    return [Easy, Medium, Hard, Impossible];
 }
 
-function settings(myGame) {
+// Continue from here to patchNotes()
+function difficultyDescription(difficulty, myGame) {
     const ctx = myGame.context;
-    const settingsWidth = 350;
-    const settingsHeight = 300;
-    const settingsTop = 135;
-    const x = myGame.canvas.width / 2;
-    const y = myGame.canvas.height / 2;
+    const ratio = difficulties[difficulty];
+    const x = myGame.canvas.width * .3 + 200;
+    const y = 150;
+    const descriptionBoxWidth = 650;
+    const descriptionBoxHeight = 500;
 
+    ctx.fillStyle = '#41980a';
+    ctx.roundRect(x, y, descriptionBoxWidth, descriptionBoxHeight, 10);
+    ctx.stroke();
+    ctx.fill();
+
+    const EnemySpeed = new Text(x + 25, y + 50, `Enemy Speed: ${ratio}x of previous`, 500, ctx, 'black', '24px times-new-roman', 'left');
+    const EnemyHealth = new Text(x + 25, y + 100, `Enemy Health: ${ratio}x of previous`, 500, ctx, 'black', '24px times-new-roman', 'left');
+    const EnemyDamage = new Text(x + 25, y + 150, `Enemy Damage: ${ratio}x of previous`, 500, ctx, 'black', '24px times-new-roman', 'left');
+    const SpawnRate = new Text(x + 25, y + 200, `Spawn Rate: ${ratio}x of previous`, 500, ctx, 'black', '24px times-new-roman', 'left');
+    const ExperienceRate = new Text(x + 25, y + 250, `Experience Rate: +${ratio} per kill`, 500, ctx, 'black', '24px times-new-roman', 'left');
+    const ScoreRate = new Text(x + 25, y + 300, `Score Rate: +${ratio} per kill`, 500, ctx, 'black', '24px times-new-roman', 'left');
+    EnemySpeed.render();
+    EnemyHealth.render();
+    EnemyDamage.render();
+    SpawnRate.render();
+    ExperienceRate.render();
+    ScoreRate.render();
+
+    const StartButton = new TextButton(x + 550, y + 450, 'rgb(57, 202, 202)', 'black', 120, 45, ctx, 'START-GAME', 'Start');
+    StartButton.render();
+    return StartButton;
+}
+
+function patchNotes(myGame) {
+    const ctx = myGame.context;
+    const x = myGame.canvas.width * .3;
+    const y = myGame.canvas.height / 2;
+    const width = myGame.canvas.width * .7;
+    const height = myGame.canvas.height;
+
+    ctx.clearRect(x, 0, width, height);
+    ctx.fillStyle = '#41980a';
+    ctx.fillRect(x, 0, width, height);
+}
+
+function controls(myGame) {
+    const ctx = myGame.context;
+    const x = myGame.canvas.width * .3;
+    const y = myGame.canvas.height / 2;
+    const width = myGame.canvas.width * .7;
+    const height = myGame.canvas.height;
+
+    ctx.clearRect(x, 0, width, height);
+    ctx.fillStyle = '#41980a';
+    ctx.fillRect(x, 0, width, height);
+
+    const Title = new Text(x + width / 2, 80, "Controls", 150, ctx, 'black', "40px times-new-roman");
+    const Movement = new Text(x + width / 2, 200, "WASD - Movements", 200, ctx);
+    const Shoot = new Text(x + width / 2, 250, "Click or Hold to shoot (Hold for 5secs to toggle auto shoot)", 600, ctx);
+    const Spacebar = new Text(x + width / 2, 300, "Spacebar to open upgrades menu", 300, ctx);
+    const Restart = new Text(x + width / 2, 350, "Press 'R' for the restart hotkey.", 300, ctx);
+    Title.render();
+    Movement.render();
+    Shoot.render();
+    Spacebar.render();
+    Restart.render();
 }
 
 function experienceBar(experience, experienceRequired, context, gameWidth, gameHeight) {
@@ -385,13 +502,17 @@ function healthBar(game, player) {
 }
 
 export {
-    Button,
+    TextButton,
+    ImageButton,
     Enemy,
     Bullet,
     Player,
     Text,
     restart,
     menu,
-    settings,
-    healthBar
+    controls,
+    healthBar,
+    patchNotes,
+    difficultyMenu,
+    difficultyDescription
 };
