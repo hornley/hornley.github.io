@@ -1,5 +1,7 @@
-import { Enemy, Player, restart, menu, healthBar, Text, difficultyMenu, difficultyDescription, patchNotes, controls } from "./entity.js";
-import { upgradeMenu, upgradeBulletDamage, upgradeBulletPenetration, upgradeHealth, upgradeAttackSpeed, upgradeMovementSpeed, playerStats } from "./upgrades.js";
+import { Enemy, Player, Restart, healthBar, Text } from "./entity.js";
+import { menu, difficultyMenu, difficultyDescription, patchNotes, controls } from "./startMenu.js";
+import { upgradeMenu, upgradeBulletDamage, upgradeBulletPenetration, upgradeHealth, upgradeAttackSpeed, upgradeMovementSpeed, playerStats, upgradeHotkeys } from "./upgrades.js";
+import { cursor, move } from "./events.js";
 
 const moves = ['w', 'a', 's', 'd'];
 
@@ -21,7 +23,7 @@ let enemySpeed = 0.5; // ***
 let enemyHealth = 1; // ***
 let enemyCollisionDamage = 5; // ***
 
-// FPS and Time
+// FPS and Time (60/s)
 const fps = 60;
 const interval = 1000/fps;
 let now;
@@ -47,12 +49,16 @@ let openUpgradeMenu = false;
 let enemies = [];
 let bullets = [];
 let buttons = [];
+let spider_webs = [];
+let restart;
+let gameBG = new Image();
 
 let game = {
     canvas: document.getElementById("canvas"),
     menu: function() {
         this.canvas.width = this.canvas.offsetWidth;
         this.canvas.height = this.canvas.offsetHeight;
+        this.canvas.onselectstart = function () { return false; }
         this.context = this.canvas.getContext("2d");
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.context.fillStyle = '#41980a';
@@ -65,6 +71,8 @@ let game = {
         eventListener(game);
     },
     start: function() {
+        restart = new Restart(game);
+        gameBG.src = "../images/gameBG.jpg";
         this.canvas.style.cursor = 'none';
         window.addEventListener('keydown', function(e) {
             if (moves.includes(e.key)) {
@@ -80,7 +88,11 @@ let game = {
             }
 
             if (parseInt(e.key) && openUpgradeMenu) {
-                upgradeHotkeys(e.key);
+                upgradeHotkeys(e.key, player_object, game);
+            }
+
+            if (e.key === 't') {
+                toggleShoot = false;
             }
         });
         
@@ -94,13 +106,9 @@ let game = {
         buttons.push(upgradeMenu(game));
         loop();
     },
-    controls: function() {
-        controls(game);
-    },
     clear: function() {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.context.fillStyle = "aliceblue";
-        this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        this.context.drawImage(gameBG, 0, 0, this.canvas.width, this.canvas.height);
         if (aoe) {
             this.context.strokeStyle = "black";
             this.context.lineWidth = 1;
@@ -117,6 +125,8 @@ let game = {
         enemyHealth = 1;
         enemyCollisionDamage = 5;
         buttons = [];
+        spider_webs = [];
+        gameRounds = {0: false, 1: false}
         lastSpawn = -1;
         score = 0;
         ongoingGame = true;
@@ -127,30 +137,23 @@ let game = {
     },
     end: function() {
         this.canvas.style.cursor = 'auto';
-        buttons.push(restart(game));
+        buttons.push(restart.render());
         enemies = [];
         bullets = [];
         this.context = null;
     },
     updateTexts: function() {
-        this.context.clearRect(0, 0, 120, 60);
-        this.context.fillStyle = "rgba(240, 248, 255, 1)";
-        this.context.fillRect(0, 0, 120, 60);
         this.context.font = "24px times-new-roman";
         this.context.textAlign = 'left';
         this.context.textBaseline = 'middle';
-        this.context.fillStyle = "black";
+        this.context.fillStyle = "white";
         this.context.fillText(`Score: ${score}`, 10, 25);
         this.context.fillText(`Round: ${gameRound + 1}`, 10, 50);
         healthBar(game, player_object);
     }
 };
 
-launch();
-
-function launch() {
-    game.menu();
-}
+game.menu();
 
 function spawnEnemy(time) {
     if (time <= (lastSpawn + spawnRate) || enemies.length >= 30) { return; }
@@ -181,66 +184,18 @@ function pause() {
     loop();
 }
 
-function move() {
-    keypresses = keypresses || [];
-
-    const directions = { w: 0, a: 0, s: 0, d: 0 };
-    const diagonal = keypresses.filter((key) => directions[key]).length === 2;
-
-    player_object.x += (keypresses["a"] ? -player_object.speed : keypresses["d"] ? player_object.speed : 0);
-    player_object.y += (keypresses["w"] ? -player_object.speed : keypresses["s"] ? player_object.speed : 0);
-}
-
 function increaseDifficulty() {
     gameRound = Math.floor(player_object.level / 2);
     let difficultyRatio = difficulties[gameDifficulty];
     if (!gameRounds[gameRound]) {
-        player_object.health = player_object.maxHealth;
-        enemySpeed = 0.5 + 1 * (Math.floor((gameRound + 1) / 5) + 1) * Math.log10(gameRound + 1) * difficultyRatio;
-        enemyHealth = 1 + 3 * (Math.floor((gameRound + 1) / 5) + 1) * Math.log10(gameRound + 1) * difficultyRatio;
-        enemyCollisionDamage = 5 + 1.5 * (Math.floor((gameRound + 1) / 5) + 1) * Math.log10(gameRound + 1) * difficultyRatio;
+        enemySpeed = 0.5 + 1 * (Math.floor((gameRound) / 5) + 1) * Math.log10(gameRound + 1) * difficultyRatio;
+        enemyHealth = 1 + 3 * (Math.floor((gameRound) / 5) + 1) * Math.log10(gameRound + 1) * difficultyRatio;
+        enemyCollisionDamage = 5 + 1.5 * (Math.floor((gameRound) / 5) + 1) * Math.log10(gameRound + 1) * difficultyRatio;
         spawnRate = -(Math.log10(gameRound + 1) / 0.005) + 500;
         gameRounds[gameRound++] = true;
         gameRounds[gameRound++] = false;
         return true;
     }
-}
-
-function upgrade() {
-    game.canvas.style.cursor = (game.canvas.style.cursor === 'auto') ? 'none' : 'auto';
-    if (player_object.statPoints >= 1) {
-        upgradeMenu(game, player_object).forEach((button) => {
-            buttons.push(button);
-        })
-    }
-    openUpgradeMenu = (player_object.statPoints >= 1) ? !openUpgradeMenu : false;
-    pause();
-}
-
-function upgradeHotkeys(key) {
-    switch (parseInt(key)) {
-        case 1:
-            upgradeHealth(player_object);
-            upgradeMenu(game, player_object);
-            break;
-        case 2:
-            upgradeBulletDamage(player_object);
-            upgradeMenu(game, player_object);
-            break;
-        case 3:
-            upgradeBulletPenetration(player_object);
-            upgradeMenu(game, player_object);
-            break;
-        case 4:
-            upgradeAttackSpeed(player_object);   
-            upgradeMenu(game, player_object);
-            break;
-        case 5:
-            upgradeMovementSpeed(player_object);
-            upgradeMenu(game, player_object);
-            break;
-    }
-
 }
 
 function difficultyToggle(button) {
@@ -254,6 +209,89 @@ function difficultyToggle(button) {
         if (x.id === 'DIFFICULTY') x.render();
     });
     gameDifficulty = button.text;
+}
+
+function updateGame() {
+    let newRound = increaseDifficulty();
+    let time = Date.now();
+    spawnEnemy(time);
+
+    game.clear();
+    keypresses = move(keypresses, player_object);
+    player_object.render(mouseX, mouseY);
+    cursor(game, player_object, mouseX, mouseY, fps);
+    enemies = player_object.AoE(time, enemies);
+
+    if (ongoingGame && player_object && !paused && (mouseDown || toggleShoot)) {
+        player_object.shoot(mouseX, mouseY, bullets);
+        (toggleShoot) ? toggleText.render() : '';
+    };
+
+    for (let i = 0; i < bullets.length; i++) {
+        let bullet = bullets[i];
+        if (bullet.tick()) { bullets.splice(i, 1); continue; }
+        bullet.render();
+    }
+
+    buttons.forEach((button) => {
+        if (button.id === 'UPGRADE' && player_object.statPoints >= 1) {
+            button.render();
+            const upgradeTooltip = new Text(game.canvas.width/2, game.canvas.height - 65, "Press Spacebar to open upgrade menu", 300, game.context);
+            upgradeTooltip.render();
+        }
+    })
+
+    spider_webs.forEach((web, index) => {
+        if (web.render(game.frameNo)) {
+            web.render(game.frameNo);
+        } else {
+            spider_webs.pop(index, 1);
+        }
+    })
+
+    for (let i = 0; i < enemies.length; i++) {
+        let enemy = enemies[i];
+
+        if (enemy.health <= 0) {
+            enemies.splice(i, 1);
+            score += 1 * difficulties[gameDifficulty];
+            player_object.experience += 1 * difficulties[gameDifficulty];
+        }
+
+        spider_webs.forEach((web) => {
+            enemy.speed =  (enemy.collide(web)) ? enemySpeed / 5 : enemySpeed;
+        })
+
+        bullets.forEach((bullet, index) => {
+            if (enemy.collide(bullet) && !bullet.isHit(enemy)) {
+                bullet.hits.push(enemy);
+                bullet.penetration -= 1;
+                enemy.health -= player_object.bulletDamage;
+                if (enemy.health <= 0) {
+                    enemies.splice(i, 1);
+                    score += 1 * difficulties[gameDifficulty];
+                    player_object.experience += 1 * difficulties[gameDifficulty];
+                } else {
+                    let web = bullet.cobweb(game.frameNo);
+                    spider_webs.push(web);
+                }
+                if (bullet.penetration <= 0) bullets.splice(index, 1);
+            }
+        })
+
+        enemy.followPlayer(player_object);
+        enemy.render(player_object);
+
+        if (enemy.collide(player_object)) {
+            player_object.health -= enemyCollisionDamage;
+            enemies.splice(i, 1);
+            if (player_object.health <= 0) {
+                ongoingGame = false;
+            }
+        }
+        player_object.checkExp();
+        game.updateTexts();
+    }
 }
 
 function buttonsOnClick() {
@@ -276,7 +314,7 @@ function buttonsOnClick() {
                 pressed = true;
                 break;
             case 'CONTROLS':
-                game.controls();
+                controls(game);
                 pressed = true;
                 break;
             case 'PATCH-NOTES':
@@ -319,74 +357,6 @@ function buttonsOnClick() {
     });
 }
 
-function updateGame() {
-    let newRound = increaseDifficulty();
-    let time = Date.now();
-    spawnEnemy(time);    
-
-    game.clear();
-    move();
-    player_object.render(mouseX, mouseY);
-    cursor();
-    enemies = player_object.AoE(time, enemies);
-
-    if (ongoingGame && player_object && !paused && (mouseDown || toggleShoot)) {
-        player_object.shoot(mouseX, mouseY, bullets);
-        (toggleShoot) ? toggleText.render() : '';
-    };
-
-    for (let i = 0; i < bullets.length; i++) {
-        let bullet = bullets[i];
-        if (bullet.tick()) { bullets.splice(i, 1); continue; }
-        bullet.render();
-    }
-
-    buttons.forEach((button) => {
-        if (button.id === 'UPGRADE' && player_object.statPoints >= 1) {
-            button.render();
-            const upgradeTooltip = new Text(game.canvas.width/2, game.canvas.height - 65, "Press Spacebar to open upgrade menu", 300, game.context);
-            upgradeTooltip.render();
-        }
-    })
-
-    for (let i = 0; i < enemies.length; i++) {
-        let enemy = enemies[i];
-
-        if (enemy.health <= 0) {
-            enemies.splice(i, 1);
-            score += 1 * difficulties[gameDifficulty];
-            player_object.experience += 1 * difficulties[gameDifficulty];
-        }
-
-        bullets.forEach((bullet, index) => {
-            if (enemy.collide(bullet) && !bullet.isHit(enemy)) {
-                bullet.hits.push(enemy);
-                bullet.penetration -= 1;
-                enemy.health -= player_object.bulletDamage;
-                if (enemy.health <= 0) {
-                    enemies.splice(i, 1);
-                    score += 1 * difficulties[gameDifficulty];
-                    player_object.experience += 1 * difficulties[gameDifficulty];
-                }
-                if (bullet.penetration <= 0) bullets.splice(index, 1);
-            }
-        })
-
-        enemy.followPlayer(player_object);
-        enemy.render(player_object);
-
-        if (enemy.collide(player_object)) {
-            player_object.health -= enemyCollisionDamage;
-            enemies.splice(i, 1);
-            if (player_object.health <= 0) {
-                ongoingGame = false;
-            }
-        }
-        player_object.checkExp();
-        game.updateTexts();
-    }
-}
-
 function eventListener(game) {
     game.canvas.addEventListener('mousemove', function(e) {
         mouseX = e.offsetX;
@@ -403,27 +373,22 @@ function eventListener(game) {
         mouseDownTimeout = setTimeout(function() {
             if (mouseDown) {
                 toggleShoot = true;
-                toggleText = new Text(game.canvas.width / 2, 25, "Auto Shoot: Enabled", 150, game.context);
+                toggleText = new Text(game.canvas.width / 2, 25, "Auto Shoot: Enabled", 150, game.context, 'white');
             }
-        }, 5000);
+        }, 3000);
         buttonsOnClick();
     });
 }
 
-function cursor() {
-    game.context.lineWidth = 5;
-    game.context.strokeStyle = 'grey';
-    game.context.beginPath();
-    game.context.arc(mouseX, mouseY, 12, 0, 2*Math.PI);
-    game.context.stroke();
-    game.context.strokeStyle = 'black';
-    game.context.beginPath();
-    if (game.frameNo < player_object.lastShot + 60/player_object.attackSpeed && player_object.lastShot != 0) {
-        game.context.arc(mouseX, mouseY, 12, 0, ( (game.frameNo % 60) / ((player_object.lastShot + (fps/player_object.attackSpeed)) % 60) )*Math.PI*2);
-    } else {
-        game.context.arc(mouseX, mouseY, 12, 0, Math.PI*2);
+function upgrade() {
+    game.canvas.style.cursor = (game.canvas.style.cursor === 'auto') ? 'none' : 'auto';
+    if (player_object.statPoints >= 1) {
+        upgradeMenu(game, player_object).forEach((button) => {
+            buttons.push(button);
+        })
     }
-    game.context.stroke();
+    openUpgradeMenu = (player_object.statPoints >= 1) ? !openUpgradeMenu : false;
+    pause();
 }
 
 export {

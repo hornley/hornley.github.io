@@ -84,7 +84,33 @@ function upgradeAttackSpeed(player) {
 }
 
 function upgradeMovementSpeed(player) {
-    upgradeAttribute(player, 'speed', 0.2);
+    upgradeAttribute(player, 'speed', 0.5);
+}
+
+function upgradeHotkeys(key, player_object, game) {
+    switch (parseInt(key)) {
+        case 1:
+            upgradeHealth(player_object);
+            upgradeMenu(game, player_object);
+            break;
+        case 2:
+            upgradeBulletDamage(player_object);
+            upgradeMenu(game, player_object);
+            break;
+        case 3:
+            upgradeBulletPenetration(player_object);
+            upgradeMenu(game, player_object);
+            break;
+        case 4:
+            upgradeAttackSpeed(player_object);   
+            upgradeMenu(game, player_object);
+            break;
+        case 5:
+            upgradeMovementSpeed(player_object);
+            upgradeMenu(game, player_object);
+            break;
+    }
+
 }
 
 export {
@@ -94,5 +120,6 @@ export {
     upgradeBulletPenetration,
     upgradeAttackSpeed,
     upgradeMovementSpeed,
-    playerStats
+    playerStats,
+    upgradeHotkeys
 };
