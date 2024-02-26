@@ -10,10 +10,11 @@ const buttonConfig = [
     { key: "UPGRADE-ATTACK_SPEED", text: "Attack Speed", y: -230 },
     { key: "UPGRADE-MOVEMENT_SPEED", text: "Movement Speed", y: -190 }
 ];
+let allotedpoints = {'maxHealth': 0, 'bulletDamage': 0, 'penetration': 0, 'attackSpeed': 0, 'speed': 0};
 
 function renderUpgradeButtons(game, cw, ch, player) {
     const buttons = buttonConfig.map(({ key, text, y }) => {
-        const UpgradeButton = new ImageButton(315, ch + y + 15, 26, 26, game.context, key, "../images/UpgradeButton.png");
+        const UpgradeButton = new ImageButton(335, ch + y + 15, 26, 26, game.context, key, "../images/UpgradeButton.png");
         UpgradeButton.render();
         return UpgradeButton;
     });
@@ -27,21 +28,21 @@ function playerStats(game, player) {
 
     context.beginPath();
     context.fillStyle = upgradeBGColor;
-    context.roundRect(50, ch - 400, 300, 350, 10);
+    context.roundRect(50, ch - 400, 320, 350, 10);
     context.fill();
     
     statPointsText = new Text(75, ch - 370, player.statPoints, 25, game.context, upgradeTextColor);
-    statPointsText.render();
+    (player.statPoints >= 1) ? statPointsText.render() : '';
 
-    const MaxHealthText = new Text(75, ch - 330, `Max Health: ${(player.maxHealth).toFixed(0)}`, 250, context, upgradeTextColor, '24px times-new-roman', 'left');
+    const MaxHealthText = new Text(75, ch - 330, `Max Health: ${(player.maxHealth).toFixed(0)} (${allotedpoints['maxHealth']})`, 250, context, upgradeTextColor, '24px times-new-roman', 'left');
     MaxHealthText.render();
-    const BulletDamageText = new Text(75, ch - 290, `Bullet Damage: ${(player.bulletDamage).toFixed(0)}`, 250, context, upgradeTextColor, '24px times-new-roman', 'left');
+    const BulletDamageText = new Text(75, ch - 290, `Bullet Damage: ${(player.bulletDamage).toFixed(0)} (${allotedpoints['bulletDamage']})`, 250, context, upgradeTextColor, '24px times-new-roman', 'left');
     BulletDamageText.render();
-    const BulletPenetrationText = new Text(75, ch - 250, `Bullet Penetration: ${(player.penetration).toFixed(0)}`, 250, context, upgradeTextColor, '24px times-new-roman', 'left');
+    const BulletPenetrationText = new Text(75, ch - 250, `Bullet Penetration: ${(player.penetration).toFixed(0)} (${allotedpoints['penetration']})`, 250, context, upgradeTextColor, '24px times-new-roman', 'left');
     BulletPenetrationText.render();
-    const AttackSpeedText = new Text(75, ch - 210, `Attack Speed: ${(player.attackSpeed).toFixed(0)}`, 250, context, upgradeTextColor, '24px times-new-roman', 'left');
+    const AttackSpeedText = new Text(75, ch - 210, `Attack Speed: ${(player.attackSpeed).toFixed(0)} (${allotedpoints['attackSpeed']})`, 250, context, upgradeTextColor, '24px times-new-roman', 'left');
     AttackSpeedText.render();
-    const MovementSpeedText = new Text(75, ch - 170, `Movement Speed: ${(player.speed).toFixed(0)}`, 250, context, upgradeTextColor, '24px times-new-roman', 'left');
+    const MovementSpeedText = new Text(75, ch - 170, `Movement Speed: ${(player.speed).toFixed(0)} (${allotedpoints['speed']})`, 250, context, upgradeTextColor, '24px times-new-roman', 'left');
     MovementSpeedText.render();
 }
 
@@ -65,6 +66,7 @@ function upgradeAttribute(player, attribute, increment) {
     if (increment !== undefined) player[attribute] += increment;
     player.statPoints -= 1;
     statPointsText.update(player.statPoints);
+    allotedpoints[attribute]++;
 }
 
 function upgradeHealth(player) {
