@@ -9,9 +9,10 @@ playerImage.src = spiderSprite;
 const spiderShoot = "../images/Spider-Shoot.png";
 let bulletImage = new Image();
 bulletImage.src = spiderShoot;
-const enemySprite = "../images/Enemy.png";
-let enemyImage = new Image();
-enemyImage.src = enemySprite;
+let WormImage = new Image();
+WormImage.src = "../images/Worm-Sprite.png";
+let CockroachImage = new Image();
+CockroachImage.src = "../images/Cockroach-Sprite.png";
 let spiderWeb = new Image();
 spiderWeb.src = "../images/Spider-Web.png";
 let idleFrame = 0;
@@ -54,6 +55,8 @@ class Player {
         this.rotation = 0;
         this.attackSpeed = 2;
         this.lastShot = 0;
+        this.lastDash = 0;
+        this.dash = false;
     };
 
     crash() {
@@ -85,6 +88,19 @@ class Player {
         this.lastShot = this.game.frameNo;
         shootSound.play();
         bullets.push(new Bullet(this.x, this.y, dx, dy, this.game, mouseX, mouseY, this.bulletDamage, this.penetration));
+    };
+
+    dash(mouseX, mouseY) {
+        if (this.game.frameNo < this.lastDash + 300 && this.lastDash != 0) { return; }
+        const x = this.x - mouseX;
+        const y = this.y - mouseY;
+        const l = Math.sqrt(x * x + y * y);
+
+        this.lastDash = this.game.frameNo;
+        const dx = (x / l) * this.speed;
+        const dy = (y / l) * this.speed;
+        this.x += -dx;
+        this.y += -dy;
     };
 
     AoE(time, enemies) {
@@ -184,15 +200,20 @@ class Bullet {
 }; 
 
 class Enemy {
-    constructor(hp, speed, game) {
+    constructor(name, hp, speed, damage, multiplier, game, width, height, angle) {
+        this.name = name;
         this.game = game;
         this.x = Math.random() * (game.canvas.width - 30) + 2;
         this.y = Math.random() * (game.canvas.height - 30) + 2;
         this.health = hp;
         this.max_health = hp;
         this.speed = speed;
-        this.width = 51;
-        this.height = 24;
+        this.baseSpeed = speed;
+        this.damage = damage;
+        this.width = width;
+        this.height = height;
+        this.angle = angle;
+        this.multiplier = multiplier;
         this.rotation = 0;
     };
 
@@ -210,11 +231,20 @@ class Enemy {
     };
 
     render(player) {
-        this.rotation = Math.atan2(player.y - this.y, player.x - this.x) + .2*Math.PI/2;
+        this.rotation = Math.atan2(player.y - this.y, player.x - this.x) + this.angle;
+
+        const currentHealth = this.health/this.max_health;
+        const remainingHealth = (this.max_health - this.health)/this.max_health;
+        const curRectWidth = this.width / 1.5 * currentHealth;
+
+        this.game.context.fillStyle = 'white';
+        this.game.context.fillRect(this.x - this.width / 3, this.y - 30, curRectWidth, 5);
+        this.game.context.fillStyle = 'black';
+        this.game.context.fillRect(this.x - this.width / 3 + curRectWidth, this.y - 30, this.width / 1.5 * remainingHealth, 5);
 
         this.game.context.setTransform(1, 0, 0, 1, this.x, this.y);
         this.game.context.rotate(this.rotation);
-        this.game.context.drawImage(enemyImage, -this.width / 2, -this.height / 2);
+        this.game.context.drawImage((this.name === 'Worm') ? WormImage : CockroachImage, -this.width / 2, -this.height / 2);
         this.game.context.setTransform(1, 0, 0, 1, 0, 0);
     };
 
@@ -357,10 +387,13 @@ class Restart {
     };
 
     render() {
+        this.ctx.save();
+        this.ctx.beginPath();
         this.ctx.fillStyle = 'rgba(119, 161, 161, 1)';
         this.ctx.strokeStyle = 'black';
         this.ctx.roundRect(this.x - this.width / 2, this.y - this.height / 2 - 125, this.width, this.height, 15);
         this.ctx.fill();
+        this.ctx.restore();
         this.Text.render();
         this.Button.render();
         return this.Button;
@@ -368,10 +401,10 @@ class Restart {
 }
 
 function experienceBar(experience, experienceRequired, context, gameWidth, gameHeight) {
-    let currentExperience = experience/experienceRequired;
-    let remainingExperience = (experienceRequired - experience)/experienceRequired;
-    let currentRectWidth = gameWidth * currentExperience;
-    let expBarHeight = 20;
+    const currentExperience = experience/experienceRequired;
+    const remainingExperience = (experienceRequired - experience)/experienceRequired;
+    const currentRectWidth = gameWidth * currentExperience;
+    const expBarHeight = 20;
     const percentage = new Text(gameWidth/2, gameHeight - 10, `Exp: ${(experience).toFixed(2)}/${(experienceRequired).toFixed(2)} (${(currentExperience * 100).toFixed(2)}%)`, 150, context, 'white', '15px times-new-roman', 'white');
     
     context.fillStyle = "red";
@@ -382,6 +415,7 @@ function experienceBar(experience, experienceRequired, context, gameWidth, gameH
 }
 
 function healthBar(game, player) {
+    game.context.save();
     game.context.lineWidth = 25;
     game.context.strokeStyle = 'black';
     game.context.beginPath();
@@ -391,7 +425,8 @@ function healthBar(game, player) {
     game.context.beginPath();
     game.context.arc(game.canvas.width, 0, 125, (player.health/player.maxHealth/2 + 0.5)*Math.PI, .5*Math.PI, true);
     game.context.stroke();
-    const playerLevelText = new Text(game.canvas.width - 40, 50, player.level, 50, game.context, 'black', '60px times-new-roman');
+    game.context.restore();
+    const playerLevelText = new Text(game.canvas.width - 40, 50, player.level, 50, game.context, 'white', '60px times-new-roman');
     playerLevelText.render();
 }
 
