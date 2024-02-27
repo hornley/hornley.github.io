@@ -56,7 +56,6 @@ class Player {
         this.attackSpeed = 2;
         this.lastShot = 0;
         this.lastDash = 0;
-        this.dash = false;
     };
 
     crash() {
@@ -68,7 +67,8 @@ class Player {
         this.crash();
         
         this.game.context.setTransform(1, 0, 0, 1, this.x, this.y);
-        this.game.context.rotate(Math.atan2(mouseY - this.y, mouseX - this.x) - Math.PI / 2);
+        let angle = Math.atan2(mouseY - this.y, mouseX - this.x) - Math.PI / 2;
+        this.game.context.rotate(angle);
         this.game.context.drawImage(playerImage, spriteWidth * idleFrame, 0, spriteWidth, spriteHeight, -this.width / 2, -this.height / 2, spriteWidth, spriteHeight);
         if (this.game.frameNo % 10 == 0) idleFrame++;
         if (idleFrame === 3) idleFrame = 0;
@@ -97,10 +97,14 @@ class Player {
         const l = Math.sqrt(x * x + y * y);
 
         this.lastDash = this.game.frameNo;
-        const dx = (x / l) * this.speed;
-        const dy = (y / l) * this.speed;
-        this.x += -dx;
-        this.y += -dy;
+        for (let i = 1; i <= 25; i += 5) {
+            setTimeout(() => {
+                const dx = (x / l) * this.speed * i;
+                const dy = (y / l) * this.speed * i;
+                this.x += -dx;
+                this.y += -dy;
+            }, 150 * i/5)
+        }
     };
 
     AoE(time, enemies) {
@@ -218,16 +222,16 @@ class Enemy {
     };
 
     collide(object) {
-        let myleft = this.x;
-        let myright = this.x;
-        let mytop = this.y;
-        let mybottom = this.y;
+        let myleft = this.x - this.width/2;
+        let myright = this.x + this.width/2;
+        let mytop = this.y - this.height/2;
+        let mybottom = this.y + this.height/2;
         let otherleft = object.x - object.width / 2;
         let otherright = object.x + object.width / 2;
         let othertop = object.y - object.height / 2;
         let otherbottom = object.y + object.height / 2;
         
-        return (mybottom >= othertop) && (myright <= otherright) && (myleft >= otherleft) && (mytop <= otherbottom);
+        return (mybottom >= othertop) && (myright >= otherleft) && (myleft <= otherright) && (mytop <= otherbottom);
     };
 
     render(player) {
