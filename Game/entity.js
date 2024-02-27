@@ -8,11 +8,13 @@ const spriteWidth = 64,
     spiderShoot = "./images/Spider-Shoot.png";
 let playerImage = new Image(),
     bulletImage = new Image(),
+    BossWormImage = new Image(),
     WormImage = new Image(),
     CockroachImage = new Image(),
     spiderWeb = new Image();
 playerImage.src = spiderSprite;
 bulletImage.src = spiderShoot;
+BossWormImage.src = "./images/Boss-Worm-Sprite.png";
 WormImage.src = "./images/Worm-Sprite.png";
 CockroachImage.src = "./images/Cockroach-Sprite.png";
 spiderWeb.src = "./images/Spider-Web.png";
@@ -155,6 +157,10 @@ class SpiderWebs {
         this.context.drawImage(spiderWeb, this.x - this.width / 2, this.y - this.height / 2);
         return true;
     };
+
+    detection(object) {
+        return detectRectangleCollision(this, object);
+    };
 }
 
 class Bullet {
@@ -222,7 +228,7 @@ class Enemy {
         this.width = width;
         this.height = height;
         this.angle = angle;
-        this.multiplier = multiplier;
+        this.multiplier = multiplier * 25;
         this.rotation = 0;
         this.currRotation = 0;
     };
@@ -246,7 +252,11 @@ class Enemy {
 
         this.game.context.setTransform(1, 0, 0, 1, this.x, this.y);
         this.game.context.rotate(this.rotation);
-        this.game.context.drawImage((this.name === 'Worm') ? WormImage : CockroachImage, -this.width / 2, -this.height / 2);
+        if (this.name === 'Worm-Boss') {
+            this.game.context.drawImage(BossWormImage, -this.width / 2, -this.height / 2);
+        } else {
+            this.game.context.drawImage((this.name === 'Worm') ? WormImage : CockroachImage, -this.width / 2, -this.height / 2);
+        }
         this.game.context.setTransform(1, 0, 0, 1, 0, 0);
     };
 
