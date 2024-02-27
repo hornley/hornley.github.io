@@ -3,7 +3,7 @@ import { difficulties } from "./game.js";
 
 const version = 'Version: 0.3.0-alpha';
 let img = new Image();
-img.src = "../images/Menu.jpg";
+img.src = "./images/Menu.jpg";
 
 function startClear(ctx, width, height) {
     ctx.drawImage(img, 0, 0, 1920, 1080, 0, 0, width, height);
@@ -32,7 +32,7 @@ function menu(myGame, back=null) {
         startButton.render();
     }
 
-    // const patchNotesButton = new ImageButton(x * 1.85, y * 2 - 50, 22, 22, ctx, 'PATCH-NOTES', "../images/Patch-Notes.png");
+    // const patchNotesButton = new ImageButton(x * 1.85, y * 2 - 50, 22, 22, ctx, 'PATCH-NOTES', "./images/Patch-Notes.png");
     // const gameVersion = new Text(85, y * 2 - 17, version, 150, ctx, 'black', '20px times-new-roman');
 
     // patchNotesButton.render();

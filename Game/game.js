@@ -74,7 +74,7 @@ let game = {
     start: function() {
         ongoingGame = true;
         restart = new Restart(game);
-        gameBG.src = "../images/gameBG.jpg";
+        gameBG.src = "./images/gameBG.jpg";
         this.canvas.style.cursor = 'none';
         window.addEventListener('keydown', function(e) {
             let key = (e.key.length > 1) ? e.key : e.key.toLowerCase();
