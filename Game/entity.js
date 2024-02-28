@@ -310,7 +310,8 @@ class WormBoss extends Enemy {
         this.game.context.setTransform(1, 0, 0, 1, this.x, this.y);
         this.game.context.rotate(this.rotation);
         if (this.name === 'Worm-Boss') {
-            this.game.context.drawImage(BossWormImage, -this.width / 2, -this.height / 2);
+            if (this.x > player.x) this.game.context.scale(1, -1);
+            this.game.context.drawImage(BossWormImage, -this.width/2, -this.height / 2);
         } else if (this.name === 'Cockroach-Boss') {
             this.game.context.drawImage(BossCockroachImage, -this.width / 2, -this.height / 2);
         } else {

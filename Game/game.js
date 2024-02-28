@@ -75,47 +75,49 @@ let game = {
         eventListener(game);
     },
     start: function() {
-        ongoingGame = true;
-        restart = new Restart(game);
-        gameBG.src = "./images/gameBG.jpg";
-        this.canvas.style.cursor = 'none';
-        window.addEventListener('keydown', function(e) {
-            let key = (e.key.length > 1) ? e.key : e.key.toLowerCase();
-            if (moves.includes(key)) {
-                keypresses[key] = true;
-            }
+        gameBG.onload = function () {
+            ongoingGame = true;
+            restart = new Restart(game);
+            game.canvas.style.cursor = 'none';
+            window.addEventListener('keydown', function(e) {
+                let key = (e.key.length > 1) ? e.key : e.key.toLowerCase();
+                if (moves.includes(key)) {
+                    keypresses[key] = true;
+                }
+                
+                if (key === " ") {
+                    upgrade();
+                }
+    
+                if ((key === 'r') && !ongoingGame) {
+                    game.restart();
+                }
+    
+                if (parseInt(key) && openUpgradeMenu) {
+                    upgradeHotkeys(key, player_object, game);
+                }
+    
+                if (key === 'Shift') {
+                    player_object.dash(mouseX, mouseY);
+                }
+    
+                if (key === 't') {
+                    toggleShoot = false;
+                }
+            });
             
-            if (key === " ") {
-                upgrade();
-            }
-
-            if ((key === 'r') && !ongoingGame) {
-                game.restart();
-            }
-
-            if (parseInt(key) && openUpgradeMenu) {
-                upgradeHotkeys(key, player_object, game);
-            }
-
-            if (key === 'Shift') {
-                player_object.dash(mouseX, mouseY);
-            }
-
-            if (key === 't') {
-                toggleShoot = false;
-            }
-        });
-        
-        window.addEventListener('keyup', function(e) {
-            let key = e.key.toLowerCase();
-            if (moves.includes(key)) {
-                keypresses[key] = false;
-            }
-        });
-        player_object = new Player(game);
-        buttons = [];
-        buttons.push(upgradeMenu(game));
-        loop();
+            window.addEventListener('keyup', function(e) {
+                let key = e.key.toLowerCase();
+                if (moves.includes(key)) {
+                    keypresses[key] = false;
+                }
+            });
+            player_object = new Player(game);
+            buttons = [];
+            buttons.push(upgradeMenu(game));
+            loop();
+        }
+        gameBG.src = "./images/gameBG.jpg";
     },
     clear: function() {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
