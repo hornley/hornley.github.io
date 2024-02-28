@@ -11,10 +11,12 @@ let playerImage = new Image(),
     BossWormImage = new Image(),
     WormImage = new Image(),
     CockroachImage = new Image(),
+    BossCockroachImage = new Image(),
     spiderWeb = new Image();
 playerImage.src = spiderSprite;
 bulletImage.src = spiderShoot;
 BossWormImage.src = "./images/Boss-Worm-Sprite.png";
+BossCockroachImage.src = "./images/Boss-Cockroach-Sprite.png";
 WormImage.src = "./images/Worm-Sprite.png";
 CockroachImage.src = "./images/Cockroach-Sprite.png";
 spiderWeb.src = "./images/Spider-Web.png";
@@ -215,7 +217,7 @@ class Bullet {
 }; 
 
 class Enemy {
-    constructor(name, hp, speed, damage, multiplier, game, width, height, angle) {
+    constructor(name, hp, speed, damage, multiplier, type, game, width, height, angle) {
         this.name = name;
         this.game = game;
         this.x = Math.random() * (game.canvas.width - 30) + 2;
@@ -231,6 +233,8 @@ class Enemy {
         this.multiplier = multiplier * 25;
         this.rotation = 0;
         this.currRotation = 0;
+        this.slowed = false;
+        this.type = type;
     };
 
     collide(object) {
@@ -254,6 +258,8 @@ class Enemy {
         this.game.context.rotate(this.rotation);
         if (this.name === 'Worm-Boss') {
             this.game.context.drawImage(BossWormImage, -this.width / 2, -this.height / 2);
+        } else if (this.name === 'Cockroach-Boss') {
+            this.game.context.drawImage(BossCockroachImage, -this.width / 2, -this.height / 2);
         } else {
             this.game.context.drawImage((this.name === 'Worm') ? WormImage : CockroachImage, -this.width / 2, -this.height / 2);
         }
@@ -261,12 +267,14 @@ class Enemy {
     };
 
     followPlayer(player) {
+        let speed = this.speed;
+        if (this.slowed) speed /= (this.type === 'Boss') ? 2 : 5;
         const x = this.x - player.x;
         const y = this.y - player.y;
         const l = Math.sqrt(x * x + y * y);
 
-        const dx = (x / l) * this.speed;
-        const dy = (y / l) * this.speed;
+        const dx = (x / l) * speed;
+        const dy = (y / l) * speed;
         this.x += -dx;
         this.y += -dy;
     };
@@ -278,6 +286,132 @@ class Enemy {
         this.y <= player.y + safeAreaHeight / 2)
     };
 };
+
+class WormBoss extends Enemy {
+    constructor(name, hp, speed, damage, multiplier, type, game, width, height, angle, phases) {
+        super(name, hp, speed, damage, multiplier, type, game, width, height, angle);
+        this.phases = phases;
+        this.phase = 0;
+    }
+
+    render(player) {
+        this.rotation = Math.atan2(player.y - this.y, player.x - this.x) + this.angle;
+        this.currRotation = this.rotation * (180 / Math.PI);
+
+        const currentHealth = this.health/this.max_health;
+        const remainingHealth = (this.max_health - this.health)/this.max_health;
+        const curRectWidth = this.width / 1.5 * currentHealth;
+
+        this.game.context.fillStyle = 'white';
+        this.game.context.fillRect(this.x - this.width / 3, this.y - 120, curRectWidth, 5);
+        this.game.context.fillStyle = 'black';
+        this.game.context.fillRect(this.x - this.width / 3 + curRectWidth, this.y - 120, this.width / 1.5 * remainingHealth, 5);
+
+        this.game.context.setTransform(1, 0, 0, 1, this.x, this.y);
+        this.game.context.rotate(this.rotation);
+        if (this.name === 'Worm-Boss') {
+            this.game.context.drawImage(BossWormImage, -this.width / 2, -this.height / 2);
+        } else if (this.name === 'Cockroach-Boss') {
+            this.game.context.drawImage(BossCockroachImage, -this.width / 2, -this.height / 2);
+        } else {
+            this.game.context.drawImage((this.name === 'Worm') ? WormImage : CockroachImage, -this.width / 2, -this.height / 2);
+        }
+        this.game.context.setTransform(1, 0, 0, 1, 0, 0);
+    };
+
+    phaseCheck() {
+        let hpPercentage = this.health / this.max_health;
+        // To check where Summons are getting summoned from...
+        // this.game.context.fillRect(this.x - this.width * 2, this.y - this.height * 2, this.width * 4, this.height * 4);
+        if (hpPercentage <= this.phases[this.phase + 1] && this.phase < this.phase + 1) {
+            this.phase = this.phase + 1;
+            return true;
+        }
+        return false;
+    }
+
+    Summon(enemyHealth, enemySpeed, enemyCollisionDamage) {
+        let enemies = [];
+        let i = 0;
+        while (i < 5) {
+            let enemy = new Enemy('Worm', enemyHealth, enemySpeed, enemyCollisionDamage, 0, 'Normal', this.game, 51, 24, .18*Math.PI/2);
+            if (!this.withinSafeArea(enemy)) continue;
+            enemies.push(enemy);
+            i++;
+        }
+        return enemies;
+    }
+
+    withinSafeArea(enemy) {
+        return (this.x >= enemy.x - this.width * 2 &&
+        this.x <= enemy.x + this.width * 2 &&
+        this.y >= enemy.y - this.height * 2 &&
+        this.y <= enemy.y + this.height * 2)
+    }
+};
+
+class CockroachBoss extends Enemy {
+    constructor(name, hp, speed, damage, multiplier, type, game, width, height, angle, phases) {
+        super(name, hp, speed, damage, multiplier, type, game, width, height, angle);
+        this.phases = phases;
+        this.phase = 0;
+    }
+
+    render(player) {
+        this.rotation = Math.atan2(player.y - this.y, player.x - this.x) + this.angle;
+        this.currRotation = this.rotation * (180 / Math.PI);
+
+        const currentHealth = this.health/this.max_health;
+        const remainingHealth = (this.max_health - this.health)/this.max_health;
+        const curRectWidth = this.width / 1.5 * currentHealth;
+
+        this.game.context.fillStyle = 'white';
+        this.game.context.fillRect(this.x - this.width / 3, this.y - 120, curRectWidth, 5);
+        this.game.context.fillStyle = 'black';
+        this.game.context.fillRect(this.x - this.width / 3 + curRectWidth, this.y - 120, this.width / 1.5 * remainingHealth, 5);
+
+        this.game.context.setTransform(1, 0, 0, 1, this.x, this.y);
+        this.game.context.rotate(this.rotation);
+        if (this.name === 'Worm-Boss') {
+            this.game.context.drawImage(BossWormImage, -this.width / 2, -this.height / 2);
+        } else if (this.name === 'Cockroach-Boss') {
+            this.game.context.drawImage(BossCockroachImage, -this.width / 2, -this.height / 2);
+        } else {
+            this.game.context.drawImage((this.name === 'Worm') ? WormImage : CockroachImage, -this.width / 2, -this.height / 2);
+        }
+        this.game.context.setTransform(1, 0, 0, 1, 0, 0);
+    };
+
+    phaseCheck() {
+        let hpPercentage = this.health / this.max_health;
+        // To check where Summons are getting summoned from...
+        // this.game.context.fillRect(this.x - this.width * 2, this.y - this.height * 2, this.width * 4, this.height * 4);
+        if (hpPercentage <= this.phases[this.phase + 1] && this.phase < this.phase + 1) {
+            this.phase = this.phase + 1;
+            return true;
+        }
+        return false;
+    }
+
+    Summon(enemyHealth, enemySpeed, enemyCollisionDamage) {
+        let enemies = [];
+        let i = 0;
+        while (i < 5) {
+            let enemy = new Enemy('Cockroach', enemyHealth, enemySpeed, enemyCollisionDamage, 0, 'Normal', this.game, 51, 24, .18*Math.PI/2);
+            if (!this.withinSafeArea(enemy)) continue;
+            enemies.push(enemy);
+            i++;
+        }
+        return enemies;
+    }
+
+    withinSafeArea(enemy) {
+        return (this.x >= enemy.x - this.width * 2 &&
+        this.x <= enemy.x + this.width * 2 &&
+        this.y >= enemy.y - this.height * 2 &&
+        this.y <= enemy.y + this.height * 2)
+    }
+}
 
 class TextButton {
     constructor(x, y, fillStyle, textColor, width, height, ctx, id, text, round=10) {
@@ -612,6 +746,8 @@ export {
     TextButton,
     ImageButton,
     Enemy,
+    WormBoss,
+    CockroachBoss,
     Bullet,
     Player,
     Text,

@@ -1,4 +1,4 @@
-import { Enemy, Player, Restart, healthBar, Text, TextButton } from "./entity.js";
+import { CockroachBoss, WormBoss, Enemy, Player, Restart, healthBar, Text, TextButton } from "./entity.js";
 import { menu, difficultyMenu, patchNotes, controls } from "./startMenu.js";
 import { upgradeMenu, upgradeBulletDamage, upgradeBulletPenetration, upgradeHealth, upgradeAttackSpeed, upgradeMovementSpeed, playerStats, upgradeHotkeys } from "./upgrades.js";
 import { cursor, move } from "./events.js";
@@ -130,6 +130,8 @@ let game = {
     },
     restart: function() {
         this.canvas.style.cursor = 'none';
+        gameRound = 0;
+        gameStage = 1;
         toggleShoot = false;
         spawnRate = 500;
         enemySpeed = 0.5;
@@ -167,15 +169,20 @@ let game = {
     }
 };
 
+function newGame() {
+
+}
+
 game.menu();
 
 function spawnEnemy(time) {
-    if (time <= (lastSpawn + spawnRate) || enemies.length >= 30 || boss) { return; }
+    if (time <= (lastSpawn + spawnRate) || enemies.length >= 30 || boss) return;
     let name;
     if (stageBossFight) {
         enemies = [];
         name = stages[gameStage - 1];
-        boss = new Enemy(`${name}-Boss`, enemyHealth * 25, enemySpeed / 3, enemyCollisionDamage * 5, 1, game, 153, 78, .05*Math.PI/2)
+        if (name === 'Worm') boss = new WormBoss(`${name}-Boss`, enemyHealth * 25, enemySpeed / 3, enemyCollisionDamage * 5, 1, 'Boss', game, 153, 78, .05*Math.PI/2, {1: 0.75, 2: 0.5, 3: 0.25})
+        if (name === 'Cockroach') boss = new CockroachBoss(`${name}-Boss`, enemyHealth * 25, enemySpeed / 3, enemyCollisionDamage * 5, 1, 'Boss', game, 153, 78, .05*Math.PI/2, {1: 0.75, 2: 0.5, 3: 0.25})
         enemies.push(boss);
         return;
     }
@@ -183,9 +190,9 @@ function spawnEnemy(time) {
     name = (Math.random() > 0.3 && gameStage > 1) ? 'Cockroach' : 'Worm';
 
     if (name === 'Worm') {
-        enemy = new Enemy(name, enemyHealth, enemySpeed, enemyCollisionDamage, 1, game, 51, 24, .18*Math.PI/2);
+        enemy = new Enemy(name, enemyHealth, enemySpeed, enemyCollisionDamage, 1, 'Normal', game, 51, 24, .18*Math.PI/2);
     } else {
-        enemy = new Enemy(name, enemyHealth * 2, enemySpeed * 1.75, enemyCollisionDamage * 1.5, 2, game, 56, 43, .005*Math.PI/2);
+        enemy = new Enemy(name, enemyHealth * 2, enemySpeed * 1.75, enemyCollisionDamage * 1.5, 2, 'Normal', game, 56, 43, .005*Math.PI/2);
     }
 
     lastSpawn = time;
@@ -255,37 +262,33 @@ function difficultyToggle(button) {
 function rewarding(reward, multiplier) {
     score += reward * multiplier;
     player_object.experience += reward * multiplier;
-    if (boss) {
-        boss = null;
-        stageBossFight = false;
-    }
     player_object.checkExp();
     game.updateTexts();
 }
 
 function bossFight(reward) {
     if (boss.health <= 0) {
-        rewarding(reward, multiplier);
-        score += reward * boss.multiplier;
-        player_object.experience += reward * boss.multiplier;
+        rewarding(reward, boss.multiplier);
         boss = null;
         stageBossFight = false;
     }
 
-    if (spider_webs.length === 0) boss.speed = enemySpeed / 3;
+    let newPhase = boss.phaseCheck();
+    if (newPhase) boss.Summon(enemyHealth, enemySpeed, enemyCollisionDamage).forEach((x) => { enemies.push(x) });
+
+    if (spider_webs.length === 0) boss.slowed = false;
     
     spider_webs.forEach((web) => {
-        boss.speed = (web.detection(boss)) ? boss.speed /= 5 : enemySpeed / 3;
+        boss.slowed = (web.detection(boss)) ? true : false;
     })
 
     bullets.forEach((bullet, index) => {
         if (boss.collide(bullet) && !bullet.isHit(boss)) {
             bullet.hits.push(boss);
-            bullet.penetration -= 1;
+            bullet.penetration = 0;
             boss.health -= player_object.bulletDamage;
             if (boss.health <= 0) {
-                score += reward * boss.multiplier;
-                player_object.experience += reward * boss.multiplier;
+                rewarding(reward, boss.multiplier);
                 boss = null;
                 stageBossFight = false;
                 return;
@@ -296,6 +299,8 @@ function bossFight(reward) {
             if (bullet.penetration <= 0) bullets.splice(index, 1);
         }
     })
+
+    if (!boss) return;
 
     boss.followPlayer(player_object);
     boss.render(player_object);
@@ -352,7 +357,6 @@ function updateGame() {
             spider_webs.splice(index, 1);
         }
     })
-
     
     for (let i = 0; i < enemies.length; i++) {
         let enemy = enemies[i];
@@ -361,9 +365,11 @@ function updateGame() {
             enemies.splice(i, 1);
             rewarding(reward, enemy.multiplier);
         }
+
+        if (spider_webs.length === 0) enemy.slowed = false;
         
         spider_webs.forEach((web) => {
-            enemy.speed =  (enemy.collide(web)) ? enemySpeed / 5 : enemySpeed;
+            enemy.slowed = (web.detection(enemy)) ? true : false;
         })
 
         bullets.forEach((bullet, index) => {
