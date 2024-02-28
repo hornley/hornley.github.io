@@ -1,4 +1,4 @@
-import { Enemy, Player, Restart, healthBar, Text, TextButton } from "./entity.js";
+import { CockroachBoss, WormBoss, Enemy, Player, Restart, healthBar, Text, TextButton } from "./entity.js";
 import { menu, difficultyMenu, patchNotes, controls } from "./startMenu.js";
 import { upgradeMenu, upgradeBulletDamage, upgradeBulletPenetration, upgradeHealth, upgradeAttackSpeed, upgradeMovementSpeed, playerStats, upgradeHotkeys } from "./upgrades.js";
 import { cursor, move } from "./events.js";
@@ -8,6 +8,7 @@ const moves = ['w', 'a', 's', 'd', 'W', 'A', 'S', 'D'];
 // Difficulty rampage
 let gameDifficulty = 'Easy';
 const difficulties = {'Easy': 1, 'Medium': 1.5, 'Hard': 2, 'Impossible': 3, 'Dodge Only': 5};
+const stages = {1: 'Worm', 2: 'Cockroach'};
 let gameRound;
 let gameStage;
 let gameRounds = {0: false, 1: false};
@@ -48,11 +49,13 @@ let ongoingGame;
 let paused = false;
 let openUpgradeMenu = false;
 let enemies = [];
+let boss;
 let bullets = [];
 let buttons = [];
 let spider_webs = [];
 let restart;
 let gameBG = new Image();
+let stageBossFight;
 
 let game = {
     canvas: document.getElementById("canvas"),
@@ -74,7 +77,7 @@ let game = {
     start: function() {
         ongoingGame = true;
         restart = new Restart(game);
-        gameBG.src = "../images/gameBG.jpg";
+        gameBG.src = "./images/gameBG.jpg";
         this.canvas.style.cursor = 'none';
         window.addEventListener('keydown', function(e) {
             let key = (e.key.length > 1) ? e.key : e.key.toLowerCase();
@@ -127,6 +130,8 @@ let game = {
     },
     restart: function() {
         this.canvas.style.cursor = 'none';
+        gameRound = 0;
+        gameStage = 1;
         toggleShoot = false;
         spawnRate = 500;
         enemySpeed = 0.5;
@@ -136,6 +141,8 @@ let game = {
         gameRounds = {0: false, 1: false}
         lastSpawn = -1;
         score = 0;
+        boss = null;
+        stageBossFight = false;
         ongoingGame = true;
         player_object = new Player(game);
         this.context = this.canvas.getContext("2d");
@@ -162,17 +169,30 @@ let game = {
     }
 };
 
+function newGame() {
+
+}
+
 game.menu();
 
 function spawnEnemy(time) {
-    if (time <= (lastSpawn + spawnRate) || enemies.length >= 30) { return; }
-    let name = (Math.random() > 0.3 && gameStage > 1) ? 'Cockroach' : 'Worm';
+    if (time <= (lastSpawn + spawnRate) || enemies.length >= 30 || boss) return;
+    let name;
+    if (stageBossFight) {
+        enemies = [];
+        name = stages[gameStage - 1];
+        if (name === 'Worm') boss = new WormBoss(`${name}-Boss`, enemyHealth * 25, enemySpeed / 3, enemyCollisionDamage * 5, 1, 'Boss', game, 153, 78, .05*Math.PI/2, {1: 0.75, 2: 0.5, 3: 0.25})
+        if (name === 'Cockroach') boss = new CockroachBoss(`${name}-Boss`, enemyHealth * 25, enemySpeed / 3, enemyCollisionDamage * 5, 1, 'Boss', game, 153, 78, .05*Math.PI/2, {1: 0.75, 2: 0.5, 3: 0.25})
+        enemies.push(boss);
+        return;
+    }
     let enemy;
+    name = (Math.random() > 0.3 && gameStage > 1) ? 'Cockroach' : 'Worm';
 
     if (name === 'Worm') {
-        enemy = new Enemy(name, enemyHealth, enemySpeed, enemyCollisionDamage, 1, game, 51, 24, .2*Math.PI/2);
+        enemy = new Enemy(name, enemyHealth, enemySpeed, enemyCollisionDamage, 1, 'Normal', game, 51, 24, .18*Math.PI/2);
     } else {
-        enemy = new Enemy(name, enemyHealth * 2, enemySpeed * 1.75, enemyCollisionDamage * 1.5, 2, game, 56, 43, .005*Math.PI/2);
+        enemy = new Enemy(name, enemyHealth * 2, enemySpeed * 1.75, enemyCollisionDamage * 1.5, 2, 'Normal', game, 56, 43, .005*Math.PI/2);
     }
 
     lastSpawn = time;
@@ -201,6 +221,7 @@ function pause() {
 }
 
 function increaseDifficulty() {
+    let _stage = gameStage;
     gameRound = Math.floor(player_object.level / 2);
     let difficultyRatio = difficulties[gameDifficulty];
     if (!gameRounds[gameRound]) {
@@ -211,6 +232,9 @@ function increaseDifficulty() {
         spawnRate = -(Math.log10(gameRound + 1) / 0.005) + 500;
         gameRounds[gameRound++] = true;
         gameRounds[gameRound++] = false;
+        if (_stage !== gameStage && _stage) {
+            stageBossFight = true;
+        }
         return true;
     }
 }
@@ -233,6 +257,60 @@ function difficultyToggle(button) {
         }
     });
     gameDifficulty = button.text;
+}
+
+function rewarding(reward, multiplier) {
+    score += reward * multiplier;
+    player_object.experience += reward * multiplier;
+    player_object.checkExp();
+    game.updateTexts();
+}
+
+function bossFight(reward) {
+    if (boss.health <= 0) {
+        rewarding(reward, boss.multiplier);
+        boss = null;
+        stageBossFight = false;
+    }
+
+    let newPhase = boss.phaseCheck();
+    if (newPhase) boss.Summon(enemyHealth, enemySpeed, enemyCollisionDamage).forEach((x) => { enemies.push(x) });
+
+    if (spider_webs.length === 0) boss.slowed = false;
+    
+    spider_webs.forEach((web) => {
+        boss.slowed = (web.detection(boss)) ? true : false;
+    })
+
+    bullets.forEach((bullet, index) => {
+        if (boss.collide(bullet) && !bullet.isHit(boss)) {
+            bullet.hits.push(boss);
+            bullet.penetration = 0;
+            boss.health -= player_object.bulletDamage;
+            if (boss.health <= 0) {
+                rewarding(reward, boss.multiplier);
+                boss = null;
+                stageBossFight = false;
+                return;
+            } else {
+                let web = bullet.cobweb(game.frameNo);
+                spider_webs.push(web);
+            }
+            if (bullet.penetration <= 0) bullets.splice(index, 1);
+        }
+    })
+
+    if (!boss) return;
+
+    boss.followPlayer(player_object);
+    boss.render(player_object);
+
+    if (boss.collide(player_object)) {
+        player_object.health -= boss.damage;
+        if (player_object.health <= 0) {
+            ongoingGame = false;
+        }
+    }
 }
 
 function updateGame() {
@@ -258,6 +336,7 @@ function updateGame() {
         bullet.render();
     }
 
+    if (boss) bossFight(reward);
     
     buttons.forEach((button) => {
         if (button.id === 'UPGRADE' && player_object.statPoints >= 1) {
@@ -275,21 +354,22 @@ function updateGame() {
         if (web.render(game.frameNo)) {
             web.render(game.frameNo);
         } else {
-            spider_webs.pop(index, 1);
+            spider_webs.splice(index, 1);
         }
     })
-
+    
     for (let i = 0; i < enemies.length; i++) {
         let enemy = enemies[i];
 
         if (enemy.health <= 0) {
             enemies.splice(i, 1);
-            score += reward * enemy.multiplier;
-            player_object.experience += reward * enemy.multiplier;
+            rewarding(reward, enemy.multiplier);
         }
 
+        if (spider_webs.length === 0) enemy.slowed = false;
+        
         spider_webs.forEach((web) => {
-            enemy.speed =  (enemy.collide(web)) ? enemySpeed / 5 : enemySpeed;
+            enemy.slowed = (web.detection(enemy)) ? true : false;
         })
 
         bullets.forEach((bullet, index) => {
@@ -299,8 +379,7 @@ function updateGame() {
                 enemy.health -= player_object.bulletDamage;
                 if (enemy.health <= 0) {
                     enemies.splice(i, 1);
-                    score += reward * enemy.multiplier;
-                    player_object.experience += reward * enemy.multiplier;
+                    rewarding(reward, enemy.multiplier);
                 } else {
                     let web = bullet.cobweb(game.frameNo);
                     spider_webs.push(web);

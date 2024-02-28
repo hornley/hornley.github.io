@@ -14,7 +14,7 @@ let allotedpoints = {'maxHealth': 0, 'bulletDamage': 0, 'penetration': 0, 'attac
 
 function renderUpgradeButtons(game, cw, ch, player) {
     const buttons = buttonConfig.map(({ key, text, y }) => {
-        const UpgradeButton = new ImageButton(335, ch + y + 15, 26, 26, game.context, key, "../images/UpgradeButton.png");
+        const UpgradeButton = new ImageButton(335, ch + y + 15, 26, 26, game.context, key, "./images/UpgradeButton.png");
         UpgradeButton.render();
         return UpgradeButton;
     });

@@ -1,21 +1,25 @@
 import { aoe, aoeTime, safeAreaHeight, safeAreaWidth } from "./game.js";
 
 let lastTime = -1;
-const spriteWidth = 64;
-const spriteHeight = 64;
-const spiderSprite = "../images/Spider-Sprites.png";
-let playerImage = new Image();
-playerImage.src = spiderSprite;
-const spiderShoot = "../images/Spider-Shoot.png";
-let bulletImage = new Image();
-bulletImage.src = spiderShoot;
-let WormImage = new Image();
-WormImage.src = "../images/Worm-Sprite.png";
-let CockroachImage = new Image();
-CockroachImage.src = "../images/Cockroach-Sprite.png";
-let spiderWeb = new Image();
-spiderWeb.src = "../images/Spider-Web.png";
 let idleFrame = 0;
+const spriteWidth = 64,
+    spriteHeight = 64,
+    spiderSprite = "./images/Spider-Sprites.png",
+    spiderShoot = "./images/Spider-Shoot.png";
+let playerImage = new Image(),
+    bulletImage = new Image(),
+    BossWormImage = new Image(),
+    WormImage = new Image(),
+    CockroachImage = new Image(),
+    BossCockroachImage = new Image(),
+    spiderWeb = new Image();
+playerImage.src = spiderSprite;
+bulletImage.src = spiderShoot;
+BossWormImage.src = "./images/Boss-Worm-Sprite.png";
+BossCockroachImage.src = "./images/Boss-Cockroach-Sprite.png";
+WormImage.src = "./images/Worm-Sprite.png";
+CockroachImage.src = "./images/Cockroach-Sprite.png";
+spiderWeb.src = "./images/Spider-Web.png";
 
 class Sound {
     constructor(src) {
@@ -56,7 +60,7 @@ class Player {
         this.attackSpeed = 2;
         this.lastShot = 0;
         this.lastDash = 0;
-        this.dash = false;
+        this.currRotation = 0;
     };
 
     crash() {
@@ -68,7 +72,9 @@ class Player {
         this.crash();
         
         this.game.context.setTransform(1, 0, 0, 1, this.x, this.y);
-        this.game.context.rotate(Math.atan2(mouseY - this.y, mouseX - this.x) - Math.PI / 2);
+        let angle = Math.atan2(mouseY - this.y, mouseX - this.x) - Math.PI / 2;
+        this.currRotation = angle * (180 / Math.PI);
+        this.game.context.rotate(angle);
         this.game.context.drawImage(playerImage, spriteWidth * idleFrame, 0, spriteWidth, spriteHeight, -this.width / 2, -this.height / 2, spriteWidth, spriteHeight);
         if (this.game.frameNo % 10 == 0) idleFrame++;
         if (idleFrame === 3) idleFrame = 0;
@@ -97,10 +103,14 @@ class Player {
         const l = Math.sqrt(x * x + y * y);
 
         this.lastDash = this.game.frameNo;
-        const dx = (x / l) * this.speed;
-        const dy = (y / l) * this.speed;
-        this.x += -dx;
-        this.y += -dy;
+        for (let i = 1; i <= 25; i += 5) {
+            setTimeout(() => {
+                const dx = (x / l) * this.speed * i;
+                const dy = (y / l) * this.speed * i;
+                this.x += -dx;
+                this.y += -dy;
+            }, 150 * i/5)
+        }
     };
 
     AoE(time, enemies) {
@@ -141,12 +151,17 @@ class SpiderWebs {
         this.frame = frame;
         this.width = 60;
         this.height = 60;
+        this.currRotation = 0;
     };
 
     render(curFrame) {
         if (this.frame + 120 <= curFrame) { return false; }
         this.context.drawImage(spiderWeb, this.x - this.width / 2, this.y - this.height / 2);
         return true;
+    };
+
+    detection(object) {
+        return detectRectangleCollision(this, object);
     };
 }
 
@@ -164,6 +179,7 @@ class Bullet {
         this.mouseY = mouseY;
         this.rotation = 0;
         this.penetration = pene;
+        this.currRotation = 0;
         this.hits = [];
     };
 
@@ -189,6 +205,7 @@ class Bullet {
         if (!this.rotation) this.rotation = Math.atan2(this.mouseY - this.y, this.mouseX - this.x) + Math.PI / 2;
 
         this.game.context.setTransform(1, 0, 0, 1, this.x, this.y);
+        this.currRotation = this.rotation * (180 / Math.PI);
         this.game.context.rotate(this.rotation);
         this.game.context.drawImage(bulletImage, -this.width / 2, -this.height / 2);
         this.game.context.setTransform(1, 0, 0, 1, 0, 0);
@@ -200,7 +217,7 @@ class Bullet {
 }; 
 
 class Enemy {
-    constructor(name, hp, speed, damage, multiplier, game, width, height, angle) {
+    constructor(name, hp, speed, damage, multiplier, type, game, width, height, angle) {
         this.name = name;
         this.game = game;
         this.x = Math.random() * (game.canvas.width - 30) + 2;
@@ -213,25 +230,20 @@ class Enemy {
         this.width = width;
         this.height = height;
         this.angle = angle;
-        this.multiplier = multiplier;
+        this.multiplier = multiplier * 25;
         this.rotation = 0;
+        this.currRotation = 0;
+        this.slowed = false;
+        this.type = type;
     };
 
     collide(object) {
-        let myleft = this.x;
-        let myright = this.x;
-        let mytop = this.y;
-        let mybottom = this.y;
-        let otherleft = object.x - object.width / 2;
-        let otherright = object.x + object.width / 2;
-        let othertop = object.y - object.height / 2;
-        let otherbottom = object.y + object.height / 2;
-        
-        return (mybottom >= othertop) && (myright <= otherright) && (myleft >= otherleft) && (mytop <= otherbottom);
+        return detectRectangleCollision(this, object);
     };
 
     render(player) {
         this.rotation = Math.atan2(player.y - this.y, player.x - this.x) + this.angle;
+        this.currRotation = this.rotation * (180 / Math.PI);
 
         const currentHealth = this.health/this.max_health;
         const remainingHealth = (this.max_health - this.health)/this.max_health;
@@ -244,17 +256,25 @@ class Enemy {
 
         this.game.context.setTransform(1, 0, 0, 1, this.x, this.y);
         this.game.context.rotate(this.rotation);
-        this.game.context.drawImage((this.name === 'Worm') ? WormImage : CockroachImage, -this.width / 2, -this.height / 2);
+        if (this.name === 'Worm-Boss') {
+            this.game.context.drawImage(BossWormImage, -this.width / 2, -this.height / 2);
+        } else if (this.name === 'Cockroach-Boss') {
+            this.game.context.drawImage(BossCockroachImage, -this.width / 2, -this.height / 2);
+        } else {
+            this.game.context.drawImage((this.name === 'Worm') ? WormImage : CockroachImage, -this.width / 2, -this.height / 2);
+        }
         this.game.context.setTransform(1, 0, 0, 1, 0, 0);
     };
 
     followPlayer(player) {
+        let speed = this.speed;
+        if (this.slowed) speed /= (this.type === 'Boss') ? 2 : 5;
         const x = this.x - player.x;
         const y = this.y - player.y;
         const l = Math.sqrt(x * x + y * y);
 
-        const dx = (x / l) * this.speed;
-        const dy = (y / l) * this.speed;
+        const dx = (x / l) * speed;
+        const dy = (y / l) * speed;
         this.x += -dx;
         this.y += -dy;
     };
@@ -266,6 +286,132 @@ class Enemy {
         this.y <= player.y + safeAreaHeight / 2)
     };
 };
+
+class WormBoss extends Enemy {
+    constructor(name, hp, speed, damage, multiplier, type, game, width, height, angle, phases) {
+        super(name, hp, speed, damage, multiplier, type, game, width, height, angle);
+        this.phases = phases;
+        this.phase = 0;
+    }
+
+    render(player) {
+        this.rotation = Math.atan2(player.y - this.y, player.x - this.x) + this.angle;
+        this.currRotation = this.rotation * (180 / Math.PI);
+
+        const currentHealth = this.health/this.max_health;
+        const remainingHealth = (this.max_health - this.health)/this.max_health;
+        const curRectWidth = this.width / 1.5 * currentHealth;
+
+        this.game.context.fillStyle = 'white';
+        this.game.context.fillRect(this.x - this.width / 3, this.y - 120, curRectWidth, 5);
+        this.game.context.fillStyle = 'black';
+        this.game.context.fillRect(this.x - this.width / 3 + curRectWidth, this.y - 120, this.width / 1.5 * remainingHealth, 5);
+
+        this.game.context.setTransform(1, 0, 0, 1, this.x, this.y);
+        this.game.context.rotate(this.rotation);
+        if (this.name === 'Worm-Boss') {
+            this.game.context.drawImage(BossWormImage, -this.width / 2, -this.height / 2);
+        } else if (this.name === 'Cockroach-Boss') {
+            this.game.context.drawImage(BossCockroachImage, -this.width / 2, -this.height / 2);
+        } else {
+            this.game.context.drawImage((this.name === 'Worm') ? WormImage : CockroachImage, -this.width / 2, -this.height / 2);
+        }
+        this.game.context.setTransform(1, 0, 0, 1, 0, 0);
+    };
+
+    phaseCheck() {
+        let hpPercentage = this.health / this.max_health;
+        // To check where Summons are getting summoned from...
+        // this.game.context.fillRect(this.x - this.width * 2, this.y - this.height * 2, this.width * 4, this.height * 4);
+        if (hpPercentage <= this.phases[this.phase + 1] && this.phase < this.phase + 1) {
+            this.phase = this.phase + 1;
+            return true;
+        }
+        return false;
+    }
+
+    Summon(enemyHealth, enemySpeed, enemyCollisionDamage) {
+        let enemies = [];
+        let i = 0;
+        while (i < 5) {
+            let enemy = new Enemy('Worm', enemyHealth, enemySpeed, enemyCollisionDamage, 0, 'Normal', this.game, 51, 24, .18*Math.PI/2);
+            if (!this.withinSafeArea(enemy)) continue;
+            enemies.push(enemy);
+            i++;
+        }
+        return enemies;
+    }
+
+    withinSafeArea(enemy) {
+        return (this.x >= enemy.x - this.width * 2 &&
+        this.x <= enemy.x + this.width * 2 &&
+        this.y >= enemy.y - this.height * 2 &&
+        this.y <= enemy.y + this.height * 2)
+    }
+};
+
+class CockroachBoss extends Enemy {
+    constructor(name, hp, speed, damage, multiplier, type, game, width, height, angle, phases) {
+        super(name, hp, speed, damage, multiplier, type, game, width, height, angle);
+        this.phases = phases;
+        this.phase = 0;
+    }
+
+    render(player) {
+        this.rotation = Math.atan2(player.y - this.y, player.x - this.x) + this.angle;
+        this.currRotation = this.rotation * (180 / Math.PI);
+
+        const currentHealth = this.health/this.max_health;
+        const remainingHealth = (this.max_health - this.health)/this.max_health;
+        const curRectWidth = this.width / 1.5 * currentHealth;
+
+        this.game.context.fillStyle = 'white';
+        this.game.context.fillRect(this.x - this.width / 3, this.y - 120, curRectWidth, 5);
+        this.game.context.fillStyle = 'black';
+        this.game.context.fillRect(this.x - this.width / 3 + curRectWidth, this.y - 120, this.width / 1.5 * remainingHealth, 5);
+
+        this.game.context.setTransform(1, 0, 0, 1, this.x, this.y);
+        this.game.context.rotate(this.rotation);
+        if (this.name === 'Worm-Boss') {
+            this.game.context.drawImage(BossWormImage, -this.width / 2, -this.height / 2);
+        } else if (this.name === 'Cockroach-Boss') {
+            this.game.context.drawImage(BossCockroachImage, -this.width / 2, -this.height / 2);
+        } else {
+            this.game.context.drawImage((this.name === 'Worm') ? WormImage : CockroachImage, -this.width / 2, -this.height / 2);
+        }
+        this.game.context.setTransform(1, 0, 0, 1, 0, 0);
+    };
+
+    phaseCheck() {
+        let hpPercentage = this.health / this.max_health;
+        // To check where Summons are getting summoned from...
+        // this.game.context.fillRect(this.x - this.width * 2, this.y - this.height * 2, this.width * 4, this.height * 4);
+        if (hpPercentage <= this.phases[this.phase + 1] && this.phase < this.phase + 1) {
+            this.phase = this.phase + 1;
+            return true;
+        }
+        return false;
+    }
+
+    Summon(enemyHealth, enemySpeed, enemyCollisionDamage) {
+        let enemies = [];
+        let i = 0;
+        while (i < 5) {
+            let enemy = new Enemy('Cockroach', enemyHealth, enemySpeed, enemyCollisionDamage, 0, 'Normal', this.game, 51, 24, .18*Math.PI/2);
+            if (!this.withinSafeArea(enemy)) continue;
+            enemies.push(enemy);
+            i++;
+        }
+        return enemies;
+    }
+
+    withinSafeArea(enemy) {
+        return (this.x >= enemy.x - this.width * 2 &&
+        this.x <= enemy.x + this.width * 2 &&
+        this.y >= enemy.y - this.height * 2 &&
+        this.y <= enemy.y + this.height * 2)
+    }
+}
 
 class TextButton {
     constructor(x, y, fillStyle, textColor, width, height, ctx, id, text, round=10) {
@@ -430,10 +576,178 @@ function healthBar(game, player) {
     playerLevelText.render();
 }
 
+// Collision Formula from: https://www.youtube.com/watch?v=MvlhMEE9zuc
+
+function workOutNewPoints(cx, cy, vx, vy, rotatedAngle){
+        rotatedAngle = rotatedAngle * Math.PI / 180;
+        let dx = vx - cx;
+        let dy = vy - cy;
+        let distance = Math.sqrt(dx * dx + dy * dy);
+        let originalAngle = Math.atan2(dy,dx);
+        let rotatedX = cx + distance * Math.cos(originalAngle + rotatedAngle);
+        let rotatedY = cy + distance * Math.sin(originalAngle + rotatedAngle);
+    
+        return {
+            x: rotatedX,
+            y: rotatedY
+        }
+}
+
+function getRotatedSquareCoordinates(square){
+    let x = square.x - square.width/2;
+    let y = square.y - square.height/2;
+    let centerX = x + (square.width / 2);
+    let centerY = y + (square.height / 2);
+    let topLeft = workOutNewPoints(centerX, centerY, x, y, square.currRotation);
+    let topRight = workOutNewPoints(centerX, centerY, x + square.width, y, square.currRotation);
+    let bottomLeft = workOutNewPoints(centerX, centerY, x, y + square.height, square.currRotation);
+    let bottomRight = workOutNewPoints(centerX, centerY, x + square.width, y + square.height, square.currRotation);
+    return{
+        tl: topLeft,
+        tr: topRight,
+        bl: bottomLeft,
+        br: bottomRight
+    }
+}
+
+function xy(x,y){
+    this.x = x;
+    this.y = y;
+};
+
+function polygon(vertices, edges){
+    this.vertex = vertices;
+    this.edge = edges;
+};
+
+function sat(polygonA, polygonB){
+    var perpendicularLine = null;
+    var dot = 0;
+    var perpendicularStack = [];
+    var amin = null;
+    var amax = null;
+    var bmin = null;
+    var bmax = null;
+    //Work out all perpendicular vectors on each edge for polygonA
+    for(var i = 0; i < polygonA.edge.length; i++){
+         perpendicularLine = new xy(-polygonA.edge[i].y,
+                                     polygonA.edge[i].x);
+         perpendicularStack.push(perpendicularLine);
+    }
+    //Work out all perpendicular vectors on each edge for polygonB
+    for(var i = 0; i < polygonB.edge.length; i++){
+         perpendicularLine = new xy(-polygonB.edge[i].y,
+                                     polygonB.edge[i].x);
+         perpendicularStack.push(perpendicularLine);
+    }
+    //Loop through each perpendicular vector for both polygons
+    for(var i = 0; i < perpendicularStack.length; i++){
+        //These dot products will return different values each time
+         amin = null;
+         amax = null;
+         bmin = null;
+         bmax = null;
+         /*Work out all of the dot products for all of the vertices in PolygonA against the perpendicular vector
+         that is currently being looped through*/
+         for(var j = 0; j < polygonA.vertex.length; j++){
+              dot = polygonA.vertex[j].x *
+                    perpendicularStack[i].x +
+                    polygonA.vertex[j].y *
+                    perpendicularStack[i].y;
+            //Then find the dot products with the highest and lowest values from polygonA.
+              if(amax === null || dot > amax){
+                   amax = dot;
+              }
+              if(amin === null || dot < amin){
+                   amin = dot;
+              }
+         }
+         /*Work out all of the dot products for all of the vertices in PolygonB against the perpendicular vector
+         that is currently being looped through*/
+         for(var j = 0; j < polygonB.vertex.length; j++){
+              dot = polygonB.vertex[j].x *
+                    perpendicularStack[i].x +
+                    polygonB.vertex[j].y *
+                    perpendicularStack[i].y;
+            //Then find the dot products with the highest and lowest values from polygonB.
+              if(bmax === null || dot > bmax){
+                   bmax = dot;
+              }
+              if(bmin === null || dot < bmin){
+                   bmin = dot;
+              }
+         }
+         //If there is no gap between the dot products projection then we will continue onto evaluating the next perpendicular edge.
+         if((amin < bmax && amin > bmin) ||
+            (bmin < amax && bmin > amin)){
+              continue;
+         }
+         //Otherwise, we know that there is no collision for definite.
+         else {
+              return false;
+         }
+    }
+    /*If we have gotten this far. Where we have looped through all of the perpendicular edges and not a single one of there projections had
+    a gap in them. Then we know that the 2 polygons are colliding for definite then.*/
+    return true;
+}
+
+function detectRectangleCollision(enemy, object){
+    let thisRect = enemy;
+    let otherRect = object;
+    let tRR = getRotatedSquareCoordinates(thisRect);
+    let oRR = getRotatedSquareCoordinates(otherRect);
+    let thisTankVertices = [
+        new xy(tRR.tr.x, tRR.tr.y),
+        new xy(tRR.br.x, tRR.br.y),
+        new xy(tRR.bl.x, tRR.bl.y),
+        new xy(tRR.tl.x, tRR.tl.y),
+    ];
+    let thisTankEdges = [
+        new xy(tRR.br.x - tRR.tr.x, tRR.br.y - tRR.tr.y),
+        new xy(tRR.bl.x - tRR.br.x, tRR.bl.y - tRR.br.y),
+        new xy(tRR.tl.x - tRR.bl.x, tRR.tl.y - tRR.bl.y),
+        new xy(tRR.tr.x - tRR.tl.x, tRR.tr.y - tRR.tl.y)
+    ];
+    let otherTankVertices = [
+        new xy(oRR.tr.x, oRR.tr.y),
+        new xy(oRR.br.x, oRR.br.y),
+        new xy(oRR.bl.x, oRR.bl.y),
+        new xy(oRR.tl.x, oRR.tl.y),
+    ];
+    let otherTankEdges = [
+        new xy(oRR.br.x - oRR.tr.x, oRR.br.y - oRR.tr.y),
+        new xy(oRR.bl.x - oRR.br.x, oRR.bl.y - oRR.br.y),
+        new xy(oRR.tl.x - oRR.bl.x, oRR.tl.y - oRR.bl.y),
+        new xy(oRR.tr.x - oRR.tl.x, oRR.tr.y - oRR.tl.y)
+    ];
+    let thisRectPolygon = new polygon(thisTankVertices, thisTankEdges);
+    let otherRectPolygon = new polygon(otherTankVertices, otherTankEdges);
+
+    if(sat(thisRectPolygon, otherRectPolygon)){
+        thisRect.color = "red";
+        return true;
+    }else{
+        thisRect.color = "black";
+        if(thisRect.currRotation === 0 && otherRect.currRotation === 0){
+            if(!(
+                thisRect.x>otherRect.x+otherRect.width || 
+                thisRect.x+thisRect.width<otherRect.x || 
+                thisRect.y>otherRect.y+otherRect.height || 
+                thisRect.y+thisRect.height<otherRect.y
+            )){
+                thisRect.color = "red";
+            }
+        }
+    }
+}
+
 export {
     TextButton,
     ImageButton,
     Enemy,
+    WormBoss,
+    CockroachBoss,
     Bullet,
     Player,
     Text,
