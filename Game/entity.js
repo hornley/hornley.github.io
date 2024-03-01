@@ -2,17 +2,26 @@ import { aoe, aoeTime, safeAreaHeight, safeAreaWidth } from "./game.js";
 
 let lastTime = -1;
 let idleFrame = 0;
+let portalCloseFrame = 0, portalOpenFrame = 0, portalOpenedFrame = 0, openPortal;
 const spriteWidth = 64,
     spriteHeight = 64,
+    portalOpenCloseWidth = 320,
+    portalOpenCloseHeight = 320,
     spiderSprite = "./images/Spider-Sprites.png",
-    spiderShoot = "./images/Spider-Shoot.png";
+    spiderShoot = "./images/Spider-Shoot.png",
+    portalOpenSprite = "./images/Portal/PortalOpen.png",
+    portalCloseSprite = "./images/Portal/PortalClose.png",
+    portalOpenedSprite = "./images/Portal/Portal.png";
 let playerImage = new Image(),
     bulletImage = new Image(),
     BossWormImage = new Image(),
     WormImage = new Image(),
     CockroachImage = new Image(),
     BossCockroachImage = new Image(),
-    spiderWeb = new Image();
+    spiderWeb = new Image(),
+    portalOpenImage = new Image(),
+    portalCloseImage = new Image(),
+    portalOpenedImage = new Image();
 playerImage.src = spiderSprite;
 bulletImage.src = spiderShoot;
 BossWormImage.src = "./images/Boss-Worm-Sprite.png";
@@ -20,6 +29,9 @@ BossCockroachImage.src = "./images/Boss-Cockroach-Sprite.png";
 WormImage.src = "./images/Worm-Sprite.png";
 CockroachImage.src = "./images/Cockroach-Sprite.png";
 spiderWeb.src = "./images/Spider-Web.png";
+portalOpenImage.src = portalOpenSprite;
+portalCloseImage.src = portalCloseSprite;
+portalOpenedImage.src = portalOpenedSprite;
 
 class Sound {
     constructor(src) {
@@ -71,6 +83,12 @@ class Player {
     render(mouseX, mouseY) {
         this.crash();
         
+        const portal = new Portal(this.game);
+
+        openPortal = (!openPortal) ? portal.open() : true;
+
+        if (openPortal) portal.render();
+
         this.game.context.setTransform(1, 0, 0, 1, this.x, this.y);
         let angle = Math.atan2(mouseY - this.y, mouseX - this.x) - Math.PI / 2;
         this.currRotation = angle * (180 / Math.PI);
@@ -545,6 +563,35 @@ class Restart {
         this.Button.render();
         return this.Button;
     };
+}
+
+class Portal {
+    constructor(game) {
+        this.game = game;
+        this.frame = 0;
+        this.opened = true;
+        this.width = 320;
+        this.height = 320;
+        this.x = game.canvas.width / 2 - this.width / 2;
+    }
+
+    close() {
+        this.game.context.drawImage(portalCloseImage, 0, this.height * portalCloseFrame, this.width, this.height, game.canvas.width/2 - this.width/2, 0, this.width, this.height);
+        if (game.frameNo % 20 == 0) this.frame++;
+        if (this.frame === 5) { this.frame = 0; this.opened = false; }
+    }
+
+    open() {
+        this.game.context.drawImage(portalOpenImage, 0, this.height * portalCloseFrame, this.width, this.height, game.canvas.width/2 - this.width/2, 0, this.width, this.height);
+        if (game.frameNo % 20 == 0) this.frame++;
+        if (this.frame === 4) this.opened = true;
+    }
+
+    render() {
+        this.game.context.drawImage(portalOpenedImage, 0, this.height * portalCloseFrame, this.width, this.height, game.canvas.width/2 - this.width/2, 0, this.width, this.height);
+        if (game.frameNo % 20 == 0) this.frame++;
+        if (this.frame === 3) this.frame = 0;
+    }
 }
 
 function experienceBar(experience, experienceRequired, context, gameWidth, gameHeight) {

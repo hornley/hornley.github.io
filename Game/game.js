@@ -184,7 +184,7 @@ function spawnEnemy(time) {
         enemies = [];
         name = stages[gameStage - 1];
         if (name === 'Worm') boss = new WormBoss(`${name}-Boss`, enemyHealth * 25, enemySpeed / 3, enemyCollisionDamage * 5, 1, 'Boss', game, 153, 78, .05*Math.PI/2, {1: 0.75, 2: 0.5, 3: 0.25})
-        if (name === 'Cockroach') boss = new CockroachBoss(`${name}-Boss`, enemyHealth * 25, enemySpeed / 3, enemyCollisionDamage * 5, 1, 'Boss', game, 153, 78, .05*Math.PI/2, {1: 0.75, 2: 0.5, 3: 0.25})
+        if (name === 'Cockroach') boss = new CockroachBoss(`${name}-Boss`, enemyHealth * 75, enemySpeed / 2, enemyCollisionDamage * 15, 2, 'Boss', game, 168, 129, .05*Math.PI/2, {1: 0.75, 2: 0.5, 3: 0.25})
         enemies.push(boss);
         return;
     }
@@ -228,7 +228,8 @@ function increaseDifficulty() {
     let difficultyRatio = difficulties[gameDifficulty];
     if (!gameRounds[gameRound]) {
         gameStage = Math.floor((gameRound) / 5) + 1;
-        enemySpeed = 0.5 + 1 * gameStage * Math.log10(gameRound + 1) * difficultyRatio;
+        enemySpeed = 0.5 * (gameRound) + (1 * gameStage);
+        console.log(enemySpeed);
         enemyHealth = 1 + 3 * gameStage * Math.log10(gameRound + 1) * difficultyRatio;
         enemyCollisionDamage = 5 + 1.5 * gameStage * Math.log10(gameRound + 1) * difficultyRatio;
         spawnRate = -(Math.log10(gameRound + 1) / 0.005) + 500;
