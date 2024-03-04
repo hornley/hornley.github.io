@@ -1,16 +1,18 @@
-import { CockroachBoss, WormBoss, Enemy, Player, Restart, healthBar, Text, TextButton } from "./entity.js";
+import { CockroachBoss, WormBoss, Enemy, Player, Portal, Restart, healthBar, Text, TextButton, Stage } from "./entity.js";
 import { menu, difficultyMenu, patchNotes, controls } from "./startMenu.js";
 import { upgradeMenu, upgradeBulletDamage, upgradeBulletPenetration, upgradeHealth, upgradeAttackSpeed, upgradeMovementSpeed, playerStats, upgradeHotkeys } from "./upgrades.js";
-import { cursor, move } from "./events.js";
+import { cursor, move, showFPS } from "./events.js";
 
 const moves = ['w', 'a', 's', 'd', 'W', 'A', 'S', 'D'];
+
+const bgMusic = document.getElementById("bgMUSIC");
 
 // Difficulty rampage
 let gameDifficulty = 'Easy';
 const difficulties = {'Easy': 1, 'Medium': 1.5, 'Hard': 2, 'Impossible': 3, 'Dodge Only': 5};
 const stages = {1: 'Worm', 2: 'Cockroach'};
 let gameRound;
-let gameStage;
+let gameStage = 1;
 let gameRounds = {0: false, 1: false};
 
 // Base Enemy Stats
@@ -32,6 +34,7 @@ let now;
 let then = Date.now();
 let delta;
 let lastSpawn = -1;
+let oldTime = -1;
 
 // MouseClickEvents and Shooting toggles
 let mouseDownTimeout;
@@ -55,7 +58,11 @@ let buttons = [];
 let spider_webs = [];
 let restart;
 let gameBG = new Image();
+let stage2 = new Image();
 let stageBossFight;
+let portal;
+let StageDisplay;
+let newStageStatus;
 
 let game = {
     canvas: document.getElementById("canvas"),
@@ -76,7 +83,10 @@ let game = {
     },
     start: function() {
         gameBG.onload = function () {
+            bgMusic.volume = 0.3;
+            bgMusic.play();
             ongoingGame = true;
+            StageDisplay = new Stage(game);
             restart = new Restart(game);
             game.canvas.style.cursor = 'none';
             window.addEventListener('keydown', function(e) {
@@ -117,17 +127,15 @@ let game = {
             buttons.push(upgradeMenu(game));
             loop();
         }
-        gameBG.src = "./images/gameBG.jpg";
+        gameBG.src = "./images/Stage1/Stage1Background.png";
+        stage2.src = "./images/Stage2Background.png";
     },
     clear: function() {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.context.drawImage(gameBG, 0, 0, this.canvas.width, this.canvas.height);
-        if (aoe) {
-            this.context.strokeStyle = "black";
-            this.context.lineWidth = 1;
-            this.context.beginPath();
-            this.context.roundRect(player_object.x - safeAreaWidth / 2, player_object.y - safeAreaHeight / 2, safeAreaWidth, safeAreaHeight, 15);
-            this.context.stroke();
+        if (gameStage === 1) {
+            this.context.drawImage(gameBG, 0, 0, this.canvas.width, this.canvas.height);
+        } else {
+            this.context.drawImage(stage2, 0, 0, this.canvas.width, this.canvas.height);
         }
     },
     restart: function() {
@@ -144,7 +152,9 @@ let game = {
         lastSpawn = -1;
         score = 0;
         boss = null;
+        newStageStatus = false;
         stageBossFight = false;
+        portal = null;
         ongoingGame = true;
         player_object = new Player(game);
         this.context = this.canvas.getContext("2d");
@@ -171,30 +181,24 @@ let game = {
     }
 };
 
-function newGame() {
-
-}
-
 game.menu();
 
 function spawnEnemy(time) {
-    if (time <= (lastSpawn + spawnRate) || enemies.length >= 30 || boss) return;
-    let name;
+    if (time <= (lastSpawn + spawnRate) || enemies.length >= 30 || boss || newStageStatus) return;
     if (stageBossFight) {
-        enemies = [];
-        name = stages[gameStage - 1];
-        if (name === 'Worm') boss = new WormBoss(`${name}-Boss`, enemyHealth * 25, enemySpeed / 3, enemyCollisionDamage * 5, 1, 'Boss', game, 153, 78, .05*Math.PI/2, {1: 0.75, 2: 0.5, 3: 0.25})
+        let name = stages[gameStage];
+        if (name === 'Worm') boss = new WormBoss(`${name}-Boss`, enemyHealth * 25, enemySpeed / 3, enemyCollisionDamage * 5, 1, 'Boss', game, 230, 117, .05*Math.PI/2, {1: 0.75, 2: 0.5, 3: 0.25})
         if (name === 'Cockroach') boss = new CockroachBoss(`${name}-Boss`, enemyHealth * 75, enemySpeed / 2, enemyCollisionDamage * 15, 2, 'Boss', game, 168, 129, .05*Math.PI/2, {1: 0.75, 2: 0.5, 3: 0.25})
+        boss.setPosition();
         enemies.push(boss);
         return;
     }
     let enemy;
-    name = (Math.random() > 0.3 && gameStage > 1) ? 'Cockroach' : 'Worm';
 
-    if (name === 'Worm') {
-        enemy = new Enemy(name, enemyHealth, enemySpeed, enemyCollisionDamage, 1, 'Normal', game, 51, 24, .18*Math.PI/2);
+    if (gameStage === 1) {
+        enemy = new Enemy('Worm', enemyHealth, enemySpeed, enemyCollisionDamage, 1, 'Normal', game, 51, 24, .18*Math.PI/2);
     } else {
-        enemy = new Enemy(name, enemyHealth * 2, enemySpeed * 1.75, enemyCollisionDamage * 1.5, 2, 'Normal', game, 56, 43, .005*Math.PI/2);
+        enemy = new Enemy('Cockroach', enemyHealth * 2, enemySpeed * 1.75, enemyCollisionDamage * 1.5, 2, 'Normal', game, 56, 43, .005*Math.PI/2);
     }
 
     lastSpawn = time;
@@ -223,22 +227,21 @@ function pause() {
 }
 
 function increaseDifficulty() {
-    let _stage = gameStage;
+    let _stage = gameStage, _x = gameStage;
     gameRound = Math.floor(player_object.level / 2);
     let difficultyRatio = difficulties[gameDifficulty];
     if (!gameRounds[gameRound]) {
-        gameStage = Math.floor((gameRound) / 5) + 1;
+        _x = Math.floor((gameRound) / 5) + 1;
         enemySpeed = 0.5 * (gameRound) + (1 * gameStage);
-        console.log(enemySpeed);
         enemyHealth = 1 + 3 * gameStage * Math.log10(gameRound + 1) * difficultyRatio;
         enemyCollisionDamage = 5 + 1.5 * gameStage * Math.log10(gameRound + 1) * difficultyRatio;
         spawnRate = -(Math.log10(gameRound + 1) / 0.005) + 500;
         gameRounds[gameRound++] = true;
         gameRounds[gameRound++] = false;
-        if (_stage !== gameStage && _stage) {
-            stageBossFight = true;
+        if (_stage !== _x && _stage) {
+            portal = new Portal(game);
+            return true;
         }
-        return true;
     }
 }
 
@@ -269,12 +272,34 @@ function rewarding(reward, multiplier) {
     game.updateTexts();
 }
 
-function bossFight(reward) {
-    if (boss.health <= 0) {
-        rewarding(reward, boss.multiplier);
-        boss = null;
+function newStage() {
+    portal = (!portal) ? new Portal(game) : portal;
+
+    if (portal.closing) {
+        portal.close();
+        return;
+    }
+
+    if (portal.opened && !portal.closing ) {
+        portal.closing = portal.playerDetect(player_object);
         stageBossFight = false;
     }
+
+    if (!portal.opened && !stageBossFight) {
+        newStageStatus = false;
+        gameStage++;
+        portal = null;
+        toggleShoot = false;
+        bullets = [];
+        return;
+    }
+
+    StageDisplay.clear(gameStage);
+    portal.open();
+}
+
+function bossFight(reward) {
+    if (!boss.summoning() || !boss) return;
 
     let newPhase = boss.phaseCheck();
     if (newPhase) boss.Summon(enemyHealth, enemySpeed, enemyCollisionDamage).forEach((x) => { enemies.push(x) });
@@ -291,9 +316,8 @@ function bossFight(reward) {
             bullet.penetration = 0;
             boss.health -= player_object.bulletDamage;
             if (boss.health <= 0) {
-                rewarding(reward, boss.multiplier);
                 boss = null;
-                stageBossFight = false;
+                newStageStatus = true;
                 return;
             } else {
                 let web = bullet.cobweb(game.frameNo);
@@ -303,10 +327,9 @@ function bossFight(reward) {
         }
     })
 
-    if (!boss) return;
-
     boss.followPlayer(player_object);
     boss.render(player_object);
+    cursor(game, player_object, mouseX, mouseY, fps);
 
     if (boss.collide(player_object)) {
         player_object.health -= boss.damage;
@@ -318,15 +341,24 @@ function bossFight(reward) {
 
 function updateGame() {
     let newRound = increaseDifficulty();
-    let reward = 1 * difficulties[gameDifficulty] * gameStage;
+    let reward = 1 * difficulties[gameDifficulty] * gameStage * (stageBossFight) ? 0 : 1;
     let time = Date.now();
     spawnEnemy(time);
 
     game.clear();
+    showFPS(game, time);
     keypresses = move(keypresses, player_object);
     player_object.render(mouseX, mouseY);
-    cursor(game, player_object, mouseX, mouseY, fps);
     enemies = player_object.AoE(time, enemies);
+
+    if (newStageStatus && enemies.length < 1) {
+        newStage();
+        game.updateTexts();
+        cursor(game, player_object, mouseX, mouseY, fps);
+        return;
+    }
+
+    StageDisplay.new(gameStage);
 
     if (ongoingGame && player_object && !paused && (mouseDown || toggleShoot)) {
         player_object.shoot(mouseX, mouseY, bullets);
@@ -337,6 +369,10 @@ function updateGame() {
         let bullet = bullets[i];
         if (bullet.tick()) { bullets.splice(i, 1); continue; }
         bullet.render();
+    }
+
+    if (!stageBossFight && !boss && portal) {
+        stageBossFight = true;
     }
 
     if (boss) bossFight(reward);
@@ -369,6 +405,8 @@ function updateGame() {
             rewarding(reward, enemy.multiplier);
         }
 
+        if (enemy.type === 'Boss') continue;
+
         if (spider_webs.length === 0) enemy.slowed = false;
         
         spider_webs.forEach((web) => {
@@ -393,6 +431,7 @@ function updateGame() {
 
         enemy.followPlayer(player_object);
         enemy.render(player_object);
+        cursor(game, player_object, mouseX, mouseY, fps);
 
         if (enemy.collide(player_object)) {
             player_object.health -= enemy.damage;
@@ -404,6 +443,7 @@ function updateGame() {
         player_object.checkExp();
         game.updateTexts();
     }
+    game.updateTexts();
 }
 
 function buttonsOnClick() {

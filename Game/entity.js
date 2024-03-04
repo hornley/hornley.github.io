@@ -2,29 +2,30 @@ import { aoe, aoeTime, safeAreaHeight, safeAreaWidth } from "./game.js";
 
 let lastTime = -1;
 let idleFrame = 0;
-let portalCloseFrame = 0, portalOpenFrame = 0, portalOpenedFrame = 0, openPortal;
 const spriteWidth = 64,
     spriteHeight = 64,
-    portalOpenCloseWidth = 320,
-    portalOpenCloseHeight = 320,
     spiderSprite = "./images/Spider-Sprites.png",
     spiderShoot = "./images/Spider-Shoot.png",
     portalOpenSprite = "./images/Portal/PortalOpen.png",
     portalCloseSprite = "./images/Portal/PortalClose.png",
-    portalOpenedSprite = "./images/Portal/Portal.png";
+    portalOpenedSprite = "./images/Portal/Portal.png",
+    stagesSprite = "./images/Stages.png";
 let playerImage = new Image(),
     bulletImage = new Image(),
     BossWormImage = new Image(),
+    SummoningBossWormImage = new Image(),
     WormImage = new Image(),
     CockroachImage = new Image(),
     BossCockroachImage = new Image(),
     spiderWeb = new Image(),
     portalOpenImage = new Image(),
     portalCloseImage = new Image(),
-    portalOpenedImage = new Image();
+    portalOpenedImage = new Image(),
+    stagesImage = new Image();
 playerImage.src = spiderSprite;
 bulletImage.src = spiderShoot;
-BossWormImage.src = "./images/Boss-Worm-Sprite.png";
+BossWormImage.src = "./images/Stage1/Boss-Worm-Sprite.png";
+SummoningBossWormImage.src = "./images/Stage1/Animation.png";
 BossCockroachImage.src = "./images/Boss-Cockroach-Sprite.png";
 WormImage.src = "./images/Worm-Sprite.png";
 CockroachImage.src = "./images/Cockroach-Sprite.png";
@@ -32,6 +33,9 @@ spiderWeb.src = "./images/Spider-Web.png";
 portalOpenImage.src = portalOpenSprite;
 portalCloseImage.src = portalCloseSprite;
 portalOpenedImage.src = portalOpenedSprite;
+stagesImage.src = stagesSprite;
+
+const testing = true;
 
 class Sound {
     constructor(src) {
@@ -40,16 +44,22 @@ class Sound {
         this.sound.setAttribute("preload", "auto");
         this.sound.setAttribute("controls", "none");
         this.sound.style.display = "none";
+        this.sound.volume = 1;
         document.body.appendChild(this.sound);
     }
     play() {
         this.sound.currentTime = 0.2;
         this.sound.play();
     }
+    setVolume(num) {
+        this.sound.volume = num;
+    }
 }
 
 let levelUpSound = new Sound('../Audio/level-up.mp3');
+levelUpSound.setVolume(0.3);
 let shootSound = new Sound('../Audio/shoot.mp3');
+shootSound.setVolume(0.05);
 
 class Player {
     constructor(game) {
@@ -82,12 +92,6 @@ class Player {
 
     render(mouseX, mouseY) {
         this.crash();
-        
-        const portal = new Portal(this.game);
-
-        openPortal = (!openPortal) ? portal.open() : true;
-
-        if (openPortal) portal.render();
 
         this.game.context.setTransform(1, 0, 0, 1, this.x, this.y);
         let angle = Math.atan2(mouseY - this.y, mouseX - this.x) - Math.PI / 2;
@@ -116,19 +120,14 @@ class Player {
 
     dash(mouseX, mouseY) {
         if (this.game.frameNo < this.lastDash + 300 && this.lastDash != 0) { return; }
-        const x = this.x - mouseX;
-        const y = this.y - mouseY;
-        const l = Math.sqrt(x * x + y * y);
 
         this.lastDash = this.game.frameNo;
-        for (let i = 1; i <= 25; i += 5) {
-            setTimeout(() => {
-                const dx = (x / l) * this.speed * i;
-                const dy = (y / l) * this.speed * i;
-                this.x += -dx;
-                this.y += -dy;
-            }, 150 * i/5)
-        }
+        let _ = this.speed;
+
+        setTimeout(() => {
+            this.speed = _;
+        }, 1000)
+        this.speed *= 2;
     };
 
     AoE(time, enemies) {
@@ -248,12 +247,17 @@ class Enemy {
         this.width = width;
         this.height = height;
         this.angle = angle;
-        this.multiplier = multiplier * 25;
+        this.multiplier = multiplier * (testing) ? 25 : 1;
         this.rotation = 0;
         this.currRotation = 0;
         this.slowed = false;
         this.type = type;
     };
+
+    setPosition() {
+        this.x = this.game.canvas.width / 2 - this.width / 2;
+        this.y = 160;   
+    }
 
     collide(object) {
         return detectRectangleCollision(this, object);
@@ -310,9 +314,19 @@ class WormBoss extends Enemy {
         super(name, hp, speed, damage, multiplier, type, game, width, height, angle);
         this.phases = phases;
         this.phase = 0;
+        this.summoningFrame = 0;
+        this.summoned = false;
+    }
+
+    summoning() {
+        if (this.summoned) return true;
+        this.game.context.drawImage(SummoningBossWormImage, 0, 215 * this.summoningFrame, 230, 215, this.x - 115, 0, 230, 215);
+        if (this.game.frameNo % 90 === 0 && this.game.frameNo != 0) this.summoningFrame++;
+        if (this.summoningFrame === 3) { this.summoningFrame = 0; this.summoned = true; }
     }
 
     render(player) {
+        if (!this.summoned) return;
         this.rotation = Math.atan2(player.y - this.y, player.x - this.x) + this.angle;
         this.currRotation = this.rotation * (180 / Math.PI);
 
@@ -327,14 +341,8 @@ class WormBoss extends Enemy {
 
         this.game.context.setTransform(1, 0, 0, 1, this.x, this.y);
         this.game.context.rotate(this.rotation);
-        if (this.name === 'Worm-Boss') {
-            if (this.x > player.x) this.game.context.scale(1, -1);
-            this.game.context.drawImage(BossWormImage, -this.width/2, -this.height / 2);
-        } else if (this.name === 'Cockroach-Boss') {
-            this.game.context.drawImage(BossCockroachImage, -this.width / 2, -this.height / 2);
-        } else {
-            this.game.context.drawImage((this.name === 'Worm') ? WormImage : CockroachImage, -this.width / 2, -this.height / 2);
-        }
+        if (this.x > player.x) this.game.context.scale(1, -1);
+        this.game.context.drawImage(BossWormImage, 0, this.height * this.phase, this.width, this.height, -this.width/2, -this.height/2, this.width, this.height);
         this.game.context.setTransform(1, 0, 0, 1, 0, 0);
     };
 
@@ -391,13 +399,7 @@ class CockroachBoss extends Enemy {
 
         this.game.context.setTransform(1, 0, 0, 1, this.x, this.y);
         this.game.context.rotate(this.rotation);
-        if (this.name === 'Worm-Boss') {
-            this.game.context.drawImage(BossWormImage, -this.width / 2, -this.height / 2);
-        } else if (this.name === 'Cockroach-Boss') {
-            this.game.context.drawImage(BossCockroachImage, -this.width / 2, -this.height / 2);
-        } else {
-            this.game.context.drawImage((this.name === 'Worm') ? WormImage : CockroachImage, -this.width / 2, -this.height / 2);
-        }
+        this.game.context.drawImage(BossCockroachImage, -this.width / 2, -this.height / 2);
         this.game.context.setTransform(1, 0, 0, 1, 0, 0);
     };
 
@@ -569,28 +571,59 @@ class Portal {
     constructor(game) {
         this.game = game;
         this.frame = 0;
-        this.opened = true;
+        this.opened = false;
+        this.closing = false;
         this.width = 320;
         this.height = 320;
-        this.x = game.canvas.width / 2 - this.width / 2;
+        this.x = game.canvas.width/2;
     }
 
     close() {
-        this.game.context.drawImage(portalCloseImage, 0, this.height * portalCloseFrame, this.width, this.height, game.canvas.width/2 - this.width/2, 0, this.width, this.height);
-        if (game.frameNo % 20 == 0) this.frame++;
-        if (this.frame === 5) { this.frame = 0; this.opened = false; }
+        this.game.context.drawImage(portalCloseImage, 0, this.height * this.frame, this.width, this.height, this.x - this.width / 2, 0, this.width, this.height);
+        if (this.game.frameNo % 45 === 0) this.frame++;
+        if (this.frame === 5) { this.frame = 0; this.opened = false; this.closing = false; return true; }
     }
 
     open() {
-        this.game.context.drawImage(portalOpenImage, 0, this.height * portalCloseFrame, this.width, this.height, game.canvas.width/2 - this.width/2, 0, this.width, this.height);
-        if (game.frameNo % 20 == 0) this.frame++;
-        if (this.frame === 4) this.opened = true;
+        if (this.opened) { this.render(); return }
+        this.game.context.drawImage(portalOpenImage, 0, this.height * this.frame, this.width, this.height, this.x - this.width / 2, 0, this.width, this.height);
+        if (this.game.frameNo % 60 === 0 && this.game.frameNo != 0) this.frame++;
+        if (this.frame === 4) { this.frame = 0; this.opened = true;}
     }
 
     render() {
-        this.game.context.drawImage(portalOpenedImage, 0, this.height * portalCloseFrame, this.width, this.height, game.canvas.width/2 - this.width/2, 0, this.width, this.height);
-        if (game.frameNo % 20 == 0) this.frame++;
+        this.game.context.drawImage(portalOpenedImage, 0, this.height * this.frame, this.width, this.height, this.x - this.width / 2, 0, this.width, this.height);
+        if (this.game.frameNo % 30 === 0) this.frame++;
         if (this.frame === 3) this.frame = 0;
+    }
+
+    playerDetect(player) {
+        if (!this.opened) return false;
+        return (player.x - player.width/2 >= this.x - this.width/3 && player.x + player.width/2 <= this.x + this.width/3 && player.y - player.height/2 >= -this.height && player.y + player.height/2 <= this.height);
+    }
+}
+
+class Stage {
+    constructor(game) {
+        this.game = game;
+        this.width = 470;
+        this.height = 310;
+        this.x = game.canvas.width/2-this.width/2;
+        this.frame = 0;
+        this.status = {1: false, 2: false};
+    }
+
+    new(stage) {
+        if (this.status[stage]) return;
+        if (this.game.frameNo % 30 === 0) this.frame++;
+        if (this.frame === 5) { this.frame = 0; this.status[stage] = true; }
+        this.game.context.drawImage(stagesImage, 0, this.height * (stage - 1), this.width, this.height, this.x, 0, this.width, this.height);
+    }
+
+    clear(stage) {
+        if (this.game.frameNo % 30 === 0) this.frame++;
+        if (this.frame === 5) { this.frame = 0; }
+        this.game.context.drawImage(stagesImage, this.width, this.height * (stage - 1), this.width, this.height, this.x, this.game.canvas.height/2, this.width, this.height);
     }
 }
 
@@ -800,5 +833,7 @@ export {
     Player,
     Text,
     Restart,
+    Portal,
+    Stage,
     healthBar
 };

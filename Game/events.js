@@ -1,3 +1,5 @@
+let oldTime;
+
 function cursor(game, player_object, mouseX, mouseY, fps) {
     game.context.lineWidth = 5;
     game.context.strokeStyle = 'grey';
@@ -22,7 +24,20 @@ function move(keypresses, player_object) {
     return keypresses;
 }
 
+function showFPS(game, time) {
+    let currentfps = (time - oldTime) / 1000;
+    oldTime = time;
+    game.context.save();
+    game.context.font = "24px times-new-roman";
+    game.context.textAlign = 'left';
+    game.context.textBaseline = 'middle';
+    game.context.fillStyle = "white";
+    game.context.fillText(`FPS: ${Math.round(1/currentfps)}`, game.canvas.width - 80, game.canvas.height - 30);
+    game.context.restore();
+}
+
 export {
     cursor,
-    move
+    move,
+    showFPS
 }
