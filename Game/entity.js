@@ -65,7 +65,7 @@ class Player {
     constructor(game) {
         this.game = game;
         this.speed = 3;
-        this.health = 100;
+        this.health = 100 * (testing) ? 25 : 1;
         this.maxHealth = 100;
         this.type = "black";
         this.x = game.canvas.width / 2;
@@ -76,13 +76,14 @@ class Player {
         this.experience = 0;
         this.experienceRequired = 10;
         this.statPoints = 0;
-        this.bulletDamage = 1;
+        this.bulletDamage = 1 * (testing) ? 25 : 1;
         this.penetration = 1;
         this.rotation = 0;
-        this.attackSpeed = 2;
+        this.attackSpeed = 2 * (testing) ? 25 : 1;
         this.lastShot = 0;
         this.lastDash = 0;
         this.currRotation = 0;
+        this.lastSkillOne = 0;
     };
 
     crash() {
@@ -158,22 +159,35 @@ class Player {
             this.experienceRequired *= 1.3;
         };
     };
+
+    skillOne() {
+        if (this.game.frameNo < this.lastSkillOne + 360 && this.lastSkillOne != 0) return false;
+        this.lastSkillOne = this.game.frameNo;
+        return new SpiderWebs(this.x, this.y, this.game.context, this.game.frameNo, 5, 'PlayerSkillOne', 180);  // 60 = 1s ; 180 = 3s
+    };
+
+    devour() {
+        this.health += this.maxHealth * 0.025;
+    };
 };
 
 class SpiderWebs {
-    constructor(x, y, ctx, frame) {
+    constructor(x, y, ctx, frame, size=1, type='Normal', time=120) {
         this.x = x;
         this.y = y;
         this.context = ctx;
         this.frame = frame;
-        this.width = 60;
-        this.height = 60;
+        this.width = 60 * size;
+        this.height = 60 * size;
         this.currRotation = 0;
+        this.size = size;
+        this.type = type;
+        this.time = time;
     };
 
     render(curFrame) {
-        if (this.frame + 120 <= curFrame) { return false; }
-        this.context.drawImage(spiderWeb, this.x - this.width / 2, this.y - this.height / 2);
+        if (this.frame + this.time <= curFrame) return false;
+        this.context.drawImage(spiderWeb, 0, 0, this.width, this.height, this.x - this.width / 2, this.y - this.height / 2, this.width * this.size, this.height * this.size);
         return true;
     };
 
@@ -252,6 +266,7 @@ class Enemy {
         this.currRotation = 0;
         this.slowed = false;
         this.type = type;
+        this.dead = 0;
     };
 
     setPosition() {
@@ -264,31 +279,34 @@ class Enemy {
     };
 
     render(player) {
+        if (this.dead === 5) return true;
         this.rotation = Math.atan2(player.y - this.y, player.x - this.x) + this.angle;
         this.currRotation = this.rotation * (180 / Math.PI);
 
         const currentHealth = this.health/this.max_health;
         const remainingHealth = (this.max_health - this.health)/this.max_health;
         const curRectWidth = this.width / 1.5 * currentHealth;
-
-        this.game.context.fillStyle = 'white';
-        this.game.context.fillRect(this.x - this.width / 3, this.y - 30, curRectWidth, 5);
-        this.game.context.fillStyle = 'black';
-        this.game.context.fillRect(this.x - this.width / 3 + curRectWidth, this.y - 30, this.width / 1.5 * remainingHealth, 5);
+        
+        if (remainingHealth < 1) {
+            this.game.context.fillStyle = 'white';
+            this.game.context.fillRect(this.x - this.width / 3, this.y - 30, curRectWidth, 5);
+            this.game.context.fillStyle = 'black';
+            this.game.context.fillRect(this.x - this.width / 3 + curRectWidth, this.y - 30, this.width / 1.5 * remainingHealth, 5);
+        } 
 
         this.game.context.setTransform(1, 0, 0, 1, this.x, this.y);
         this.game.context.rotate(this.rotation);
-        if (this.name === 'Worm-Boss') {
-            this.game.context.drawImage(BossWormImage, -this.width / 2, -this.height / 2);
-        } else if (this.name === 'Cockroach-Boss') {
-            this.game.context.drawImage(BossCockroachImage, -this.width / 2, -this.height / 2);
+        if (this.name === 'Worm') {
+            if ((this.game.frameNo % 60 === 0 || !this.dead) && this.health <= 0) this.dead++;
+            this.game.context.drawImage(WormImage, 0, this.height * (Math.ceil(this.dead / 5)), this.width, this.height, -this.width/2, -this.height/2, this.width, this.height);
         } else {
-            this.game.context.drawImage((this.name === 'Worm') ? WormImage : CockroachImage, -this.width / 2, -this.height / 2);
+            this.game.context.drawImage(CockroachImage, -this.width / 2, -this.height / 2);
         }
         this.game.context.setTransform(1, 0, 0, 1, 0, 0);
     };
 
     followPlayer(player) {
+        if (this.dead) return;
         let speed = this.speed;
         if (this.slowed) speed /= (this.type === 'Boss') ? 2 : 5;
         const x = this.x - player.x;
@@ -326,7 +344,7 @@ class WormBoss extends Enemy {
     }
 
     render(player) {
-        if (!this.summoned) return;
+        if (!this.summoned || this.dead === 5) return;
         this.rotation = Math.atan2(player.y - this.y, player.x - this.x) + this.angle;
         this.currRotation = this.rotation * (180 / Math.PI);
 
@@ -334,14 +352,17 @@ class WormBoss extends Enemy {
         const remainingHealth = (this.max_health - this.health)/this.max_health;
         const curRectWidth = this.width / 1.5 * currentHealth;
 
-        this.game.context.fillStyle = 'white';
-        this.game.context.fillRect(this.x - this.width / 3, this.y - 120, curRectWidth, 5);
-        this.game.context.fillStyle = 'black';
-        this.game.context.fillRect(this.x - this.width / 3 + curRectWidth, this.y - 120, this.width / 1.5 * remainingHealth, 5);
+        if (remainingHealth < 1) {
+            this.game.context.fillStyle = 'white';
+            this.game.context.fillRect(this.x - this.width / 3, this.y - 120, curRectWidth, 5);
+            this.game.context.fillStyle = 'black';
+            this.game.context.fillRect(this.x - this.width / 3 + curRectWidth, this.y - 120, this.width / 1.5 * remainingHealth, 5);
+        }
 
         this.game.context.setTransform(1, 0, 0, 1, this.x, this.y);
         this.game.context.rotate(this.rotation);
         if (this.x > player.x) this.game.context.scale(1, -1);
+        if ((this.game.frameNo % 60 === 0 || !this.dead) && this.health <= 0) this.dead++;
         this.game.context.drawImage(BossWormImage, 0, this.height * this.phase, this.width, this.height, -this.width/2, -this.height/2, this.width, this.height);
         this.game.context.setTransform(1, 0, 0, 1, 0, 0);
     };

@@ -114,6 +114,11 @@ let game = {
                 if (key === 't') {
                     toggleShoot = false;
                 }
+
+                if (key === 'q') {
+                    let x = player_object.skillOne();
+                    if(x) spider_webs.push(x);
+                }
             });
             
             window.addEventListener('keyup', function(e) {
@@ -298,51 +303,12 @@ function newStage() {
     portal.open();
 }
 
-function bossFight(reward) {
-    if (!boss.summoning() || !boss) return;
-
-    let newPhase = boss.phaseCheck();
-    if (newPhase) boss.Summon(enemyHealth, enemySpeed, enemyCollisionDamage).forEach((x) => { enemies.push(x) });
-
-    if (spider_webs.length === 0) boss.slowed = false;
-    
-    spider_webs.forEach((web) => {
-        boss.slowed = (web.detection(boss)) ? true : false;
-    })
-
-    bullets.forEach((bullet, index) => {
-        if (boss.collide(bullet) && !bullet.isHit(boss)) {
-            bullet.hits.push(boss);
-            bullet.penetration = 0;
-            boss.health -= player_object.bulletDamage;
-            if (boss.health <= 0) {
-                boss = null;
-                newStageStatus = true;
-                return;
-            } else {
-                let web = bullet.cobweb(game.frameNo);
-                spider_webs.push(web);
-            }
-            if (bullet.penetration <= 0) bullets.splice(index, 1);
-        }
-    })
-
-    boss.followPlayer(player_object);
-    boss.render(player_object);
-    cursor(game, player_object, mouseX, mouseY, fps);
-
-    if (boss.collide(player_object)) {
-        player_object.health -= boss.damage;
-        if (player_object.health <= 0) {
-            ongoingGame = false;
-        }
-    }
-}
-
 function updateGame() {
     let newRound = increaseDifficulty();
     let reward = 1 * difficulties[gameDifficulty] * gameStage * (stageBossFight) ? 0 : 1;
     let time = Date.now();
+    let dmgMultiplier;
+    let enemy;
     spawnEnemy(time);
 
     game.clear();
@@ -375,7 +341,7 @@ function updateGame() {
         stageBossFight = true;
     }
 
-    if (boss) bossFight(reward);
+    if (boss) boss.summoning();
     
     buttons.forEach((button) => {
         if (button.id === 'UPGRADE' && player_object.statPoints >= 1) {
@@ -397,28 +363,48 @@ function updateGame() {
         }
     })
     
+    // Simplify the 'enemy.type === Boss' shits
     for (let i = 0; i < enemies.length; i++) {
-        let enemy = enemies[i];
+        enemy = enemies[i];
+        dmgMultiplier = 1;
 
-        if (enemy.health <= 0) {
+        // Simplify this shit to the bottom (1)
+        if (enemy.health <= 0 && enemy.dead === 5) {
             enemies.splice(i, 1);
             rewarding(reward, enemy.multiplier);
+            if (enemy.type === 'Boss') {
+                boss = null;
+                newStageStatus = true;
+            }
         }
 
-        if (enemy.type === 'Boss') continue;
+        if (enemy.type === 'Boss') {
+            if (!boss.summoned) continue;
+            if (boss.phaseCheck() && boss.health > 0) boss.Summon(enemyHealth, enemySpeed, enemyCollisionDamage).forEach((x) => { enemies.push(x) });
+        }
 
         if (spider_webs.length === 0) enemy.slowed = false;
         
         spider_webs.forEach((web) => {
-            enemy.slowed = (web.detection(enemy)) ? true : false;
+            if (web.detection(enemy)) {
+                enemy.slowed = true;
+                if (web.type = 'PlayerSkillOne') dmgMultiplier = 1.5;
+            } else {
+                enemy.slowed = false;
+            }
         })
 
         bullets.forEach((bullet, index) => {
-            if (enemy.collide(bullet) && !bullet.isHit(enemy)) {
+            if (enemy.collide(bullet) && !bullet.isHit(enemy) && !enemy.dead) {
                 bullet.hits.push(enemy);
                 bullet.penetration -= 1;
-                enemy.health -= player_object.bulletDamage;
-                if (enemy.health <= 0) {
+                if (enemy.type === 'Boss') bullet.penetration = 0;
+                enemy.health -= player_object.bulletDamage * dmgMultiplier; 
+                // (1)
+                if (enemy.health <= 0 && enemy.type === 'Boss' && enemy.dead === 5) {
+                    boss = null;
+                    newStageStatus = true;
+                } else if (enemy.health <= 0 && enemy.dead === 5) {
                     enemies.splice(i, 1);
                     rewarding(reward, enemy.multiplier);
                 } else {
@@ -429,17 +415,26 @@ function updateGame() {
             }
         })
 
-        enemy.followPlayer(player_object);
-        enemy.render(player_object);
-        cursor(game, player_object, mouseX, mouseY, fps);
-
+        // Change this block to also check if the player has been hit before, around 1s, if yes, ignore.
         if (enemy.collide(player_object)) {
-            player_object.health -= enemy.damage;
+            if (enemy.health > 0) player_object.health -= enemy.damage;
+            else {
+                player_object.devour(enemy);
+                // (1)
+                rewarding(reward, enemy.multiplier);
+                if (enemy.type === 'Boss') {
+                    boss = null;
+                    newStageStatus = true;
+                }
+            }
             enemies.splice(i, 1);
             if (player_object.health <= 0) {
                 ongoingGame = false;
             }
         }
+        enemy.followPlayer(player_object);
+        enemy.render(player_object);
+        cursor(game, player_object, mouseX, mouseY, fps);
         player_object.checkExp();
         game.updateTexts();
     }
