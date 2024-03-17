@@ -326,10 +326,9 @@ function getVariableFromSet(index) {
 function displayTruthTable(rows) {
     const table = document.getElementById("table");
     table.innerHTML = "<caption>"+CompoundProposition+"</caption>";
-    let col = 1;
     let row = 0;
     while (row < rows) {
-        col = 1;
+        let col = 0;
         const tableRow = document.createElement('tr');
         for (const proposition of propositions.keys()) {
             let cell;
@@ -337,10 +336,12 @@ function displayTruthTable(rows) {
             if (row === 0) {
                 cell = document.createElement('th');
                 cell.style.width = proposition.length * 6+"%";
+                cell.style.background = (col % 2 == 0) ? "powderblue" : "chartreuse";
                 cellText = document.createTextNode(proposition);
                 col++;
             } else {
                 cell = document.createElement('td');
+                cell.style.background = (col % 2 == 0) ? "#78a0a5" : "#72be26";
                 const truthValue = propositions.get(proposition)[row - 1];
                 cellText = document.createTextNode((truthValue) ? "T" : "F");
                 col++;
