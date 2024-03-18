@@ -1,0 +1,28 @@
+.Table {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+table {
+    margin-top: 1em;
+    width: 80%;
+    border-spacing: 0;
+}
+
+table, th, td {
+    border: 1px solid black;
+    max-height: 25px;
+    text-align: center;
+}
+
+td {
+    text-align: center;
+}
+
+caption {
+    font-size: 1.3em;
+    font-family: 'Times New Roman', Times, serif;
+}

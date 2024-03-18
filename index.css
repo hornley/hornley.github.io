@@ -1,22 +1,54 @@
-.PageTitle {
+.Block {
   display: flex;
-  flex-direction: row;
   flex-wrap: wrap;
   justify-content: center;
-  align-items: center;
-  color: red;
-  margin: auto;
-  padding: 10px;
+  width: 100%;
+  height: 100%;
 }
 
-.TitleDiv {
+.Title {
+  position: absolute;
+  z-index: 1;
+  color: black;
+}
+
+.socials img {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+}
+
+.socials img:hover {
+  opacity: 0.8;
+}
+
+.Introduction {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
   flex-direction: column;
-  height: 50vh;
-  width: 100vw;
+  justify-content: center;
+  color: rgb(197, 35, 35);
+  position: absolute;
+  left: 10%;
+  top: 30%;
+  font-size: 45px;
+  background: linear-gradient(to right, #c00c0c, #4622c9, #e2a728); 
+  -webkit-text-fill-color: transparent; 
+  background-clip: text; 
+}
+
+.logo {
+  position: absolute;
+  left: 60%;
+  top: 27%;
+  border-radius: 50%;
+  height: 450px;
+  width: 450px;
+  box-shadow: 15px 15px;
+}
+
+.logo:hover {
+  opacity: 0.8;
 }
 
 /* Animations */
@@ -25,24 +57,4 @@
   33% {background-color: powderblue;}
   66% {background-color: beige;}
   100% {background-color: powderblue;}
-}
-
-@keyframes title {
-  0% {font-size: 5vmin;}
-  25% {font-size: 7vmin;}
-  50% {font-size: 10vmin;}
-  75% {font-size: 13vmin;}
-  100% {font-size: 15vmin;}
-}
-
-body {
-  animation-name: body;
-  animation-duration: 5s;
-  animation-iteration-count: infinite;
-  animation-direction: alternate-reverse;
-  animation-timing-function: linear;
-}
-
-.PageTitle {
-  animation: title 1s linear 0s infinite alternate-reverse none;
 }

@@ -16,8 +16,8 @@
             <a href="../TicTacToe/TicTacToe.html">Tic Tac Toe</a>
             <a href="../Number_System/numsys.html">Number System Converter</a>
             <a href="../Game/game.html" class="active">Game</a>
-            <a href="../Socials/socials.html">Socials</a>
             <a href="../Resume/resume.html">Resume</a>
+            <a href="../SLC/slc.html">SLC</a>
             <a href="../Projects/projects.html">Projects</a>
             <a href="javascript:void(0);" class="icon" onclick="navBar()">
                 <i class="fa fa-bars"></i>
@@ -25,7 +25,10 @@
         </div>
         <div class="game" id="game">
             <canvas id="canvas" oncontextmenu="return false;"></canvas>
-            <script type="module" src="game.js"></script>
+            <script type="module" src="game.js" defer></script>
         </div>
+        <audio controls id="bgMUSIC" loop>
+            <source src="../Audio/bgMusic.mp3" type="audio/mp3">
+        </audio>
     </body>
 </html>

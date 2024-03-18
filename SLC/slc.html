@@ -3,40 +3,31 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Hornley (Number System Converter)</title>
+        <title>Hornley (SLC)</title>
         <link rel="icon" type="image/x-icon" href="../images/hornley-removebg-preview.ico">
-        <link rel="stylesheet" href="numsys.css">
+        <link rel="stylesheet" href="slc.css">
         <link rel="stylesheet" href="../styles.css">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-        <script src="numsys.js"></script>
         <script src="../navBar.js"></script>
     </head>
     <body>
       <div class="topnav" id="myTopnav">
           <a href="../index.html">Home</a>
           <a href="../TicTacToe/TicTacToe.html">Tic Tac Toe</a>
-          <a href="../Number_System/numsys.html" class="active">Number System Converter</a>
+          <a href="../Number_System/numsys.html">Number System Converter</a>
           <a href="../Game/game.html">Game</a>
           <a href="../Resume/resume.html">Resume</a>
-          <a href="../SLC/slc.html">SLC</a>
+          <a href="../SLC/slc.html" class="active">SLC</a>
           <a href="../Projects/projects.html">Projects</a>
           <a href="javascript:void(0);" class="icon" onclick="navBar()">
               <i class="fa fa-bars"></i>
           </a>
       </div>
 
-        <div class="Canvas">
-          <div class="nsc">
-            <h1>Number System Converter</h1>
-            <h1 class="result" id="result"></h1>
-            <input type="text" class="toConvert" id="toConvert" placeholder="Enter Number" required>
-            <div class="Converter">
-                <input type="text" class="base" id="base" placeholder="From" required>
-                <input type="text" class="to" id="to"placeholder="To" required>
-            </div>
-            <input class="convertButton" type="button" value="Convert" onclick="convert()">
-          </div>
-        </div>
-        
+      <div class="Table">
+        <table id="table">
+        </table>
+      </div>
+      <script type="module" src="slc.js" defer></script>
     </body>
 </html>
