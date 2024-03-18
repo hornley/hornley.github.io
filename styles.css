@@ -13,6 +13,9 @@ body {
 /* TopNav */
 
 .topnav {
+  position: sticky;
+  top: 0;
+  z-index: 2;
   justify-content: center;
   overflow: hidden;
   background-color: #333;
@@ -42,6 +45,26 @@ body {
 
 .active {
     background-color: #04AA6D;
+}
+
+/* width */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: rgb(235, 40, 40);
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(235, 40, 40);
 }
 
 /* Media Queries */
