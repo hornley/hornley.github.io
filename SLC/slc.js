@@ -1,11 +1,17 @@
 let propositions = new Map();
 const logicalConnectives = ["A", "V", "O", "->", "<->", "==", "~"];
 const variables = new Set();
+let input;
 let CompoundProposition = "";
 let CompoundPropositionLeft = "";
 let CompoundPropositionRight = "";
 let CompoundPropositionLC = "";
 let NegateCompoundProposition = 0;
+let numberOfRows = 0;
+
+let maxRows;
+let currentPage = 1;
+let maxPage = 1;
 
 function removeDuplicates() {
     let temp = new Map();
@@ -323,9 +329,11 @@ function getVariableFromSet(index) {
     return z;
 }
 
-function displayTruthTable(rows) {
+function displayTruthTable() {
+    const rows = numberOfRows + 1
     const table = document.getElementById("table");
-    table.innerHTML = "<caption>"+CompoundProposition+"</caption>";
+    table.setAttribute('border', "1px solid black")
+    table.innerHTML = "<caption>"+input+"</caption>";
     let row = 0;
     while (row < rows) {
         let col = 0;
@@ -340,24 +348,47 @@ function displayTruthTable(rows) {
                 cellText = document.createTextNode(proposition);
                 col++;
             } else {
+                tempRow = row + maxRows * (currentPage - 1)
+                if (tempRow >= rows) break;
                 cell = document.createElement('td');
                 cell.style.background = (col % 2 == 0) ? "#78a0a5" : "#72be26";
-                const truthValue = propositions.get(proposition)[row - 1];
+                const truthValue = propositions.get(proposition)[tempRow - 1];
                 cellText = document.createTextNode((truthValue) ? "T" : "F");
                 col++;
             }
             cell.appendChild(cellText);
             tableRow.appendChild(cell);
         }
-        row++;
         table.appendChild(tableRow);
+        if (row == maxRows) break;
+        row++;
     }
 }
 
+function nextPage() {
+    if (currentPage >= maxPage) return;
+    currentPage++
+    const page = document.getElementById("PageNumber")
+    page.innerHTML = currentPage
+    displayTruthTable()
+}
+
+function previousPage() {
+    if (currentPage == 1) return;
+    currentPage--
+    const page = document.getElementById("PageNumber")
+    page.innerHTML = currentPage
+    displayTruthTable()
+}
+
 function main() {
-    let input = prompt("Proposition: ");
+    const table = document.getElementById("table");
+    const inputField = document.getElementById('PropositionInput')
+    const maxRowsField = document.getElementById('maxRows')
+    maxRows = (maxRowsField.value != "") ? maxRowsField.value : 15
+    input = inputField.value;
+    inputField.value = ""
     let variableNumbers = 0;
-    let numberOfRows = 0;
     
     for (let i = 97; i <= 122; i++) {
         for (let y = 0; y < input.length; y++) {
@@ -385,7 +416,6 @@ function main() {
     }
 
     removeDuplicates();
-    displayTruthTable(numberOfRows + 1);
+    maxPage = numberOfRows / maxRows
+    displayTruthTable();
 }
-
-main();
