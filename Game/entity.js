@@ -35,7 +35,7 @@ portalCloseImage.src = portalCloseSprite;
 portalOpenedImage.src = portalOpenedSprite;
 stagesImage.src = stagesSprite;
 
-const testing = true;
+const testing = false;
 
 class Sound {
     constructor(src) {
@@ -280,7 +280,7 @@ class Enemy {
 
     render(player) {
         if (this.dead === 5) return true;
-        this.rotation = Math.atan2(player.y - this.y, player.x - this.x) + this.angle;
+        if (this.health > 0) this.rotation = Math.atan2(player.y - this.y, player.x - this.x) + this.angle;
         this.currRotation = this.rotation * (180 / Math.PI);
 
         const currentHealth = this.health/this.max_health;
