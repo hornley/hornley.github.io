@@ -1,9 +1,10 @@
+* {
+  margin: 0;
+}
+
 .Block {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
+  position: relative;
+  background-color: #76ABAE;
 }
 
 .Title {
@@ -24,17 +25,26 @@
 
 .Introduction {
   display: flex;
+  z-index: 1;
   flex-wrap: wrap;
   flex-direction: column;
   justify-content: center;
   color: rgb(197, 35, 35);
-  position: absolute;
+  position: relative;
+  width: 100%;
   left: 10%;
-  top: 30%;
-  font-size: 45px;
-  background: linear-gradient(to right, #c00c0c, #4622c9, #e2a728); 
+  font-size: 1.5rem;
+  background: linear-gradient(to right, #c00c0c, #e2a92d, #c00c0c); 
   -webkit-text-fill-color: transparent; 
   background-clip: text; 
+}
+
+canvas {
+  position: absolute;
+}
+
+.Introduction h1 {
+  margin-bottom: 1rem;
 }
 
 .logo {
@@ -42,8 +52,8 @@
   left: 60%;
   top: 27%;
   border-radius: 50%;
-  height: 450px;
-  width: 450px;
+  height: 375px;
+  width: 375px;
   box-shadow: 15px 15px;
 }
 
@@ -51,10 +61,50 @@
   opacity: 0.8;
 }
 
-/* Animations */
-@keyframes body {
-  0% {background-color: beige;}
-  33% {background-color: powderblue;}
-  66% {background-color: beige;}
-  100% {background-color: powderblue;}
+.AboutMe {
+  background-color: #31363F;
+}
+
+.AboutMe .title {
+  display: flex;
+  align-items: center;
+}
+
+.Description {
+  background-color: grey;
+  margin-top: 5%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  width: 80%;
+  height: 50%;
+}
+
+.Skills {
+  background-color: red;
+}
+
+.Skills .title {
+  display: flex;
+  align-items: center;
+}
+
+.container {
+  width: 100%;
+  height: 100vh;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+}
+
+.slides {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+  scroll-snap-align: start;
 }

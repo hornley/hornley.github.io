@@ -17,6 +17,17 @@
   - Higher Damage (1.75x)
   - Higher Speed (1.5x)
 - Start Menu improved looking better
+- SFX
+  - Background Music
+  - Changed Level Up sound
+- Portal to next stage after defeating the stage boss
+- Added a notice if your screen resolution is not the 'recommended' resolution for the game.
+- Player Dash (not a dash lol just a speed buff)
+- Added FPS at the bottom right
+
+## Bosses
+- Stage 1 (Boss King)
+- Stage 2 (Infested Cockroach)
 
 ## Changes
 - Upgrades

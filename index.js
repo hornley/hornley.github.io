@@ -2,6 +2,7 @@ let circles = []
 let mousePosition = {x: 0, y: 0}
 let spawnTime = 25
 let lastSpawn = -1
+let lastscroll = 0
 
 class Circles {
     constructor(canvas, ctx) {
@@ -13,12 +14,14 @@ class Circles {
         this.dx = (Math.random() > 0.5) ? -0.5 : 0.5
         this.dy = (Math.random() > 0.5) ? -0.5 : 0.5
         this.size = Math.ceil(Math.random() * 3)
+        this.color = [Math.random() * 255, Math.random() * 255, Math.random() * 255]
     }
 
     render() {
         this.life++
         this.ctx.save()
         this.ctx.beginPath()
+        this.ctx.fillStyle = `rgb(${this.color[0]},${this.color[1]},${this.color[2]})`
         this.ctx.arc(this.x, this.y, this.size, 0, 2*Math.PI)
         this.ctx.stroke()
         this.ctx.fill()
@@ -36,20 +39,21 @@ class Circles {
             this.x += -dx
             this.y += -dy    
         } else {
-            this.x += this.dx
-            this.y += this.dy
+            this.x += this.dx / this.size * 3
+            this.y += this.dy / this.size * 3
         }
     }
 
     connectWithNearest() {
-        circles.forEach((c) => {
+        circles.forEach((c, i) => {
             let x = c.x - this.x;
             let y = c.y - this.y;
             let l = Math.sqrt(x * x + y * y);
             if (l <= 75 * this.size) {
                 this.ctx.save()
                 this.ctx.beginPath()
-                this.ctx.strokeStyle = "rgba(0,0,0,"+25/l+")"
+                // this.ctx.strokeStyle = `rgb(${this.color[0]},${this.color[1]},${this.color[2]})`
+                this.ctx.strokeStyle = `rgba(0,0,0,${25/l})`
                 this.ctx.moveTo(this.x, this.y)
                 this.ctx.lineTo(c.x, c.y)
                 this.ctx.stroke()
@@ -68,8 +72,8 @@ let Main = {
         this.Block.appendChild(this.canvas)
         this.ctx = this.canvas.getContext('2d')
         window.addEventListener('mousemove', function(e) {
-            mousePosition.x = e.offsetX
-            mousePosition.y = e.offsetY
+            mousePosition.x = e.screenX
+            mousePosition.y = e.screenY
         })
         loop()
     }

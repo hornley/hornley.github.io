@@ -10,6 +10,10 @@
     background-color: darkslategray;
 }
 
+.topnav {
+    position: relative;
+}
+
 #canvas {
     width: 98%;
     height: 95%;
