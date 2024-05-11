@@ -1,12 +1,12 @@
-let propositions = new Map();
+let propositions;
 const logicalConnectives = ["A", "V", "O", "->", "<->", "==", "~"];
-const variables = new Set();
+let variables;
 let input;
+let NegateCompoundProposition;
 let CompoundProposition = "";
 let CompoundPropositionLeft = "";
 let CompoundPropositionRight = "";
 let CompoundPropositionLC = "";
-let NegateCompoundProposition = 0;
 let numberOfRows = 0;
 
 let maxRows;
@@ -389,6 +389,9 @@ function main() {
     input = inputField.value;
     inputField.value = ""
     let variableNumbers = 0;
+    propositions = new Map();
+    variables = new Set();
+    NegateCompoundProposition = 0;
     
     for (let i = 97; i <= 122; i++) {
         for (let y = 0; y < input.length; y++) {
