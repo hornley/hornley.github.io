@@ -82,12 +82,26 @@ canvas {
 }
 
 .Skills {
-  background-color: red;
+  background-color:burlywood;
 }
 
 .Skills .title {
   display: flex;
   align-items: center;
+}
+
+.SkillsContainer {
+  background-color: #31363F;
+  display: flex;
+  justify-content: space-evenly;
+  width: 80%;
+  height: 80%;
+  margin-top: 2%;
+}
+
+.SkillsContainer img {
+  width: 15%;
+  height: 25%;
 }
 
 .container {
@@ -107,4 +121,8 @@ canvas {
   flex-wrap: wrap;
   justify-content: center;
   scroll-snap-align: start;
+}
+
+.Description img {
+  border-radius: 5%;
 }

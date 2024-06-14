@@ -1,8 +1,9 @@
 let circles = []
 let mousePosition = {x: 0, y: 0}
-let spawnTime = 25
+let spawnTime = 25 * window.devicePixelRatio
 let lastSpawn = -1
 let lastscroll = 0
+let pages = []
 
 class Circles {
     constructor(canvas, ctx) {
@@ -66,6 +67,16 @@ class Circles {
 let Main = {
     Block: document.getElementById('Block'),
     canvas: document.createElement('canvas'),
+    observer: new IntersectionObserver(function(entries) {
+        if (entries[0].isIntersecting === true) {
+            let topNav = document.getElementById("myTopnav")
+            if (entries[0].target.className.includes("Block")) {
+                topNav.style.visibility = "visible"
+            } else {
+                topNav.style.visibility = "hidden"
+            }
+        }
+    }, { threshold: [1] }),
     menu: function() {
         this.canvas.width = window.innerWidth
         this.canvas.height = window.innerHeight
@@ -75,12 +86,20 @@ let Main = {
             mousePosition.x = e.screenX
             mousePosition.y = e.screenY
         })
+        pages.push("Block")
+        pages.push("Skills")
+        pages.push("AboutMe")
         loop()
     }
 }
 
 function loop() {
     Main.ctx.clearRect(0, 0, Main.canvas.width, Main.canvas.height)
+
+    pages.forEach((page) => {
+        Main.observer.observe(document.getElementById(page))
+    })
+
     requestAnimationFrame(loop)
     let time = Date.now()
     if (time >= (lastSpawn + spawnTime)) {

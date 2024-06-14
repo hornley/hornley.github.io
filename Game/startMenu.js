@@ -28,11 +28,6 @@ function menu(myGame, back=null) {
 
     img.onload = function () {
         startClear(ctx, myGame.canvas.width, myGame.canvas.height);
-        if (window.screen.height !== 1080 && window.screen.width !== 1920) {
-            ctx.fillRect(x - 350, y - 120, 700, 40);
-            const IncompatibleScreenNotice = new Text(x, y - 100, `Some objects might look broken with your resolution: ${window.screen.width}*${window.screen.height}.`, 1000, ctx, 'white');
-            IncompatibleScreenNotice.render();
-        }
         controlsButton.render();
         startButton.render();
     }

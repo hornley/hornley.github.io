@@ -186,7 +186,11 @@ let game = {
     }
 };
 
-game.menu();
+if (window.screen.height !== 1080 && window.screen.width !== 1920) {
+    alert("Incompatible resolution!")
+} else {
+    game.menu();
+}
 
 function spawnEnemy(time) {
     if (time <= (lastSpawn + spawnRate) || enemies.length >= 30 || boss || newStageStatus) return;
