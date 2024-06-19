@@ -6,33 +6,34 @@
         <title>Hornley (SLC)</title>
         <link rel="icon" type="image/x-icon" href="../images/hornley-removebg-preview.ico">
         <link rel="stylesheet" href="slc.css">
-        <link rel="stylesheet" href="../styles.css">
+        <link rel="stylesheet" href="/styles.css">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
         <script src="../navBar.js"></script>
-        <script src="slc.js"></script>
     </head>
 
     <body>
-      <div class="topnav" id="myTopnav">
-          <a href="../index.html">Home</a>
-          <a href="../TicTacToe/TicTacToe.html">Tic Tac Toe</a>
-          <a href="../Number_System/numsys.html">Number System Converter</a>
-          <a href="../Game/game.html">Game</a>
-          <a href="../SLC/slc.html" class="active">SLC</a>
-          <a href="../Projects/projects.html">Projects</a>
+      <!-- <div class="topnav" id="myTopnav">
+          <a href="../">Home</a>
+          <a href="../TicTacToe/">Tic Tac Toe</a>
+          <a href="../Number_System/">Number System Converter</a>
+          <a href="../Game/">Game</a>
+          <a href="../SLC/" class="active">SLC</a>
+          <a href="../Projects/">Projects</a>
           <a href="javascript:void(0);" class="icon" onclick="navBar()">
               <i class="fa fa-bars"></i>
           </a>
-      </div>
+      </div> -->
 
-      <div class="Table">
-        <div class="container">
-          <h1>Truth Table Generator</h1>
+      <div class="Container"> 
+        <div class="CalculatorGUI">
+          <h1 class="Title" id="Title">Truth Table Generator</h1>
           <input type="text" id="maxRows" placeholder="Max rows per page: 15">
           <input type="text" id="PropositionInput" placeholder="V :: A :: ~ :: -> :: <-> :: O">
           <input class="generateButton" type="button" value="Generate Truth Table" onclick="main()">
         </div>
-        <table id="table">
+
+          <table id="table">
+          
         <div class="PageController">
           <input type="button" value="Previous Page" onclick="previousPage()">
           <h2 id="PageNumber">1</h2>
@@ -40,5 +41,9 @@
         </div>
         </table>
       </div>
+
+      <img src="/images/hornley-removebg-preview.ico" alt="Logo" onclick="HomeLogo()" class="HomeLogo">
+
+      <script src="slc.js"></script>
     </body>
 </html>

@@ -6,20 +6,19 @@
         <title>Hornley (Number System Converter)</title>
         <link rel="icon" type="image/x-icon" href="../images/hornley-removebg-preview.ico">
         <link rel="stylesheet" href="numsys.css">
-        <link rel="stylesheet" href="../styles.css">
+        <link rel="stylesheet" href="/styles.css">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
         <script src="numsys.js"></script>
-        <script src="../navBar.js"></script>
+        <script src="/navBar.js"></script>
     </head>
     
     <body>
       <div class="topnav" id="myTopnav">
-          <a href="../index.html">Home</a>
-          <a href="../TicTacToe/TicTacToe.html">Tic Tac Toe</a>
-          <a href="../Number_System/numsys.html" class="active">Number System Converter</a>
-          <a href="../Game/game.html">Game</a>
-          <a href="../SLC/slc.html">SLC</a>
-          <a href="../Projects/projects.html">Projects</a>
+          <a href="/">Home</a>
+          <a href="../Calculators/" class="active">Calculators</a>
+          <a href="/TicTacToe/">Tic Tac Toe</a>
+          <a onclick="BugWarsGameResolutionCheck()">Game</a>
+          <a href="/Projects/">Projects</a>
           <a href="javascript:void(0);" class="icon" onclick="navBar()">
               <i class="fa fa-bars"></i>
           </a>
@@ -37,6 +36,8 @@
             <input class="convertButton" type="button" value="Convert" onclick="convert()">
           </div>
         </div>
+
+        <img src="/images/hornley-removebg-preview.ico" alt="Logo" onclick="HomeLogo()" class="HomeLogo">
         
     </body>
 </html>

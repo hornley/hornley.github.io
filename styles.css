@@ -14,7 +14,7 @@ body {
 
 .topnav {
   position: absolute;
-  top: 0;
+  top: 1%;
   left: 0;
   right: 0;
   margin-left: auto;
@@ -24,9 +24,11 @@ body {
   justify-content: center;
   overflow: hidden;
   background-color: #333;
+  border-radius: 30px;
 }
 
 .topnav a {
+  border-right: #333;
   display: block;
   float: left;
   color: #f2f2f2;
@@ -46,6 +48,19 @@ body {
 
 .topnav .icon {
   display: none;
+}
+
+.HomeLogo {
+  visibility: hidden;
+  margin: 0;
+  position: absolute;
+  top: 0.5rem;
+  left: 1rem;
+  border: 2px solid black;
+  border-radius: 1rem;
+  width: 2rem;
+  height: auto;
+  background-color: #04AA6D;
 }
 
 .active {

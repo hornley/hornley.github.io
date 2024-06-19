@@ -4,6 +4,7 @@ let spawnTime = 25 * window.devicePixelRatio
 let lastSpawn = -1
 let lastscroll = 0
 let pages = []
+let proficiencies = {"python": 3, "java": 2, "cpp": 2, "js": 2}
 
 class Circles {
     constructor(canvas, ctx) {
@@ -69,36 +70,72 @@ let Main = {
     canvas: document.createElement('canvas'),
     observer: new IntersectionObserver(function(entries) {
         if (entries[0].isIntersecting === true) {
-            let topNav = document.getElementById("myTopnav")
+            const topNav = document.getElementById("myTopnav")
+            const homeButton = document.getElementById("HomeButton")
             if (entries[0].target.className.includes("Block")) {
                 topNav.style.visibility = "visible"
+                homeButton.style.visibility = "hidden"
             } else {
                 topNav.style.visibility = "hidden"
+                homeButton.style.visibility = "visible"
             }
         }
-    }, { threshold: [1] }),
+    }, { threshold: 0.8 }),
     menu: function() {
         this.canvas.width = window.innerWidth
         this.canvas.height = window.innerHeight
         this.Block.appendChild(this.canvas)
         this.ctx = this.canvas.getContext('2d')
         window.addEventListener('mousemove', function(e) {
-            mousePosition.x = e.screenX
-            mousePosition.y = e.screenY
+            mousePosition.x = e.pageX
+            mousePosition.y = e.pageY
         })
         pages.push("Block")
         pages.push("Skills")
         pages.push("AboutMe")
+        pages.forEach((page) => {
+            Main.observer.observe(document.getElementById(page))
+        })
         loop()
     }
+}
+
+function skillHover(hoveredNode) {
+    let skillContainerDiv = document.getElementById("SkillsContainer")
+
+    skillContainerDiv.childNodes.forEach((node) => {
+        let id = "" + node.id
+        if (id.includes("Skill-div") && node.children[0] !== hoveredNode) {
+            node.style.opacity = 0.2
+        } else if (id.includes("Skill-div") && node.children[0] === hoveredNode) {
+            let tooltip = node.lastChild.previousSibling
+            tooltip.style.visibility = 'visible'
+            tooltip.style.opacity = '1'
+            tooltip.style.top = `${mousePosition.y - 60}px`
+            tooltip.style.left = `${mousePosition.x - 60}px`
+        }
+    })
+}
+
+function skillHoverOut() {
+    let skillContainerDiv = document.getElementById("SkillsContainer")
+
+    skillContainerDiv.childNodes.forEach((node) => {
+        let id = "" + node.id
+        if (id.includes("Skill-div")) {
+            node.style.opacity = 1
+            let tooltip = node.lastChild.previousSibling
+            tooltip.style.visibility = 'hidden'
+            tooltip.style.opacity = '0'
+            tooltip.style.top = `0px`
+            tooltip.style.left = `0px`
+        } 
+    })
 }
 
 function loop() {
     Main.ctx.clearRect(0, 0, Main.canvas.width, Main.canvas.height)
 
-    pages.forEach((page) => {
-        Main.observer.observe(document.getElementById(page))
-    })
 
     requestAnimationFrame(loop)
     let time = Date.now()

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Hornley (Projects)</title>
+        <link rel="icon" type="image/x-icon" href="../images/hornley-removebg-preview.ico">
+        <link rel="stylesheet" href="projects.css">
+        <link rel="stylesheet" href="/styles.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <script src="/navBar.js"></script>
+    </head>
+
+    <body>
+      <div class="topnav" id="myTopnav">
+          <a href="/">Home</a>
+          <a href="/Calculators/">Calculators</a>
+          <a href="/TicTacToe/">Tic Tac Toe</a>
+          <a onclick="BugWarsGameResolutionCheck()">Game</a>
+          <a href="/Projects/" class="active">Projects</a>
+          <a href="javascript:void(0);" class="icon" onclick="navBar()">
+              <i class="fa fa-bars"></i>
+          </a>
+      </div>
+
+      <div class="projectsContainer">
+        <div class="projects Home" id="Home">
+            <h1 class="title" style="width: 100%; text-align: center; position: relative; top: 10%;">
+                Projects I've Done
+            </h1>
+            <h3 style="position: relative; top: 10rem;">
+                Scroll Down to see the projects I've done
+            </h3>
+        </div>
+  
+        <div class="projects Python" id="Python">
+            <h1 class="title">Python Projects</h1>
+            <div class="ProjectSection" id="python-projects">
+
+            </div>
+        </div>
+  
+        <div class="projects Java" id="Java">
+            <h1 class="title">Java Projects</h1>
+            <div class="ProjectSection" id="java-projects">
+                
+            </div>
+        </div>
+  
+        <div class="projects CPP" id="CPP">
+            <h1 class="title">C++ Projects</h1>
+            <div class="ProjectSection" id="cpp-projects">
+                
+            </div>
+        </div>
+  
+        <div class="projects JavaScript" id="JavaScript">
+            <h1 class="title">JavaScript Projects</h1>
+            <div class="ProjectSection" id="js-projects">
+                
+            </div>
+        </div>
+      </div>
+
+      <button class="home-button" onclick="location.href='#Home'"" id="HomeButton">^</button>
+      <script src="projects.js"></script>
+
+      <img src="/images/hornley-removebg-preview.ico" alt="Logo" onclick="HomeLogo()" class="HomeLogo" id="HomeLogo">
+    </body>
+</html>

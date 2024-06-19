@@ -11,14 +11,13 @@
     <script src="navBar.js"></script>
   </head>
 
-  <body> <!-- scroll="no" style="overflow: hidden;" -->
+  <body>
     <div class="topnav" id="myTopnav">
-      <a href="index.html" class="active">Home</a>
-      <a href="TicTacToe/TicTacToe.html">Tic Tac Toe</a>
-      <a href="Number_System/numsys.html">Number System Converter</a>
-      <a href="Game/game.html">Game</a>
-      <a href="SLC/slc.html">SLC</a>
-      <a href="Projects/projects.html">Projects</a>
+      <a href="/" class="active">Home</a>
+      <a href="Calculators/">Calculators</a>
+      <a href="TicTacToe/">Tic Tac Toe</a>
+      <a onclick="BugWarsGameResolutionCheck()">Game</a>
+      <a href="Projects/">Projects</a>
       <a href="javascript:void(0);" class="icon" onclick="navBar()">
         <i class="fa fa-bars"></i>
       </a>
@@ -57,8 +56,11 @@
           <h2 style="font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif; color: #76ABAE;">About <b style="color: #EEEEEE;">Me</b></h2>
         </div>
         <div class="Description">
-          <h3 style="font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif; color: white;">I'm Harley Buendia (Hornley)</h3>
-          <img src="./images/MEBRO.jpg" alt="Mebro" style="width: 200; height: 350px; margin: 0 10% 0 10%;">
+          <h3 class="AboutMeText" id="AboutMeText">
+            I'm currently pursuing Bachelor's of Science in Computer Science at TIP.
+            I have a keen interest in topics regarding development, algorithms, programming languages, and the endless possibilities of software development.
+          </h3>
+          <img src="./images/MEBRO.jpg" alt="Mebro">
         </div>
       </div>
   
@@ -67,14 +69,64 @@
           <img src="./images/expert.png" style="width: 75px; height: 75px;">
           <h2 style="font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif; color: #76ABAE;">My <b style="color: #EEEEEE;">Skills</b></h2>
         </div>
-        <div class="SkillsContainer">
-          <img src="../images/python.png">
-          <img src="../images/java.png">
-          <img src="../images/cpp.png">
-          <img src="../images/js.png">
+        <caption>Hover over any skill</caption>
+        <div class="SkillsContainer" id="SkillsContainer">
+
+          <div id="Skill-div python" class="Skill-div" onclick="location.href='Projects/#Python'">
+            <img src="../images/python.png" onmousemove="skillHover(this)" onmouseout="skillHoverOut()" id="python">
+            <h6 style="text-align: center; width: 100%;">Proficiency</h6>
+            <div class="Proficiency">
+              <img src="../images/skill-one.png">
+              <img src="../images/skill-one.png">
+              <img src="../images/skill-one.png">
+              <img src="../images/skill-two.png">
+              <img src="../images/skill-two.png">
+            </div>
+            <span class="tooltiptext" id="tooltiptext">Click to view projects</span>
+          </div>
+          <div id="Skill-div cpp" class="Skill-div" onclick="location.href='Projects/#CPP'">
+            <img src="../images/cpp.png" onmousemove="skillHover(this)" onmouseout="skillHoverOut()" id="cpp">
+            <h6 style="text-align: center; width: 100%;">Proficiency</h6>
+            <div class="Proficiency">
+              <img src="../images/skill-one.png">
+              <img src="../images/skill-one.png">
+              <img src="../images/skill-two.png">
+              <img src="../images/skill-two.png">
+              <img src="../images/skill-two.png">
+            </div>
+            <span class="tooltiptext" id="tooltiptext">Click to view projects</span>
+          </div>
+          <div id="Skill-div java" class="Skill-div" onclick="location.href='Projects/#Java'">
+            <img src="../images/java.png" onmousemove="skillHover(this)" onmouseout="skillHoverOut()" id="java">
+            <h6 style="text-align: center; width: 100%;">Proficiency</h6>
+            <div class="Proficiency">
+              <img src="../images/skill-one.png">
+              <img src="../images/skill-one.png">
+              <img src="../images/skill-two.png">
+              <img src="../images/skill-two.png">
+              <img src="../images/skill-two.png">
+            </div>
+            <span class="tooltiptext" id="tooltiptext">Click to view projects</span>
+          </div>
+          <div id="Skill-div js" class="Skill-div" onclick="location.href='Projects/#JavaScript'">
+            <img src="../images/js.png" onmousemove="skillHover(this)" onmouseout="skillHoverOut()" id="js">
+            <h6 style="text-align: center; width: 100%;">Proficiency</h6>
+            <div class="Proficiency">
+              <img src="../images/skill-one.png">
+              <img src="../images/skill-one.png">
+              <img src="../images/skill-two.png">
+              <img src="../images/skill-two.png">
+              <img src="../images/skill-two.png">
+            </div>
+            <span class="tooltiptext" id="tooltiptext">Click to view projects</span>
+          </div>
+
         </div>
       </div>
     </div>
+    <button class="home-button" onclick="location.href='#Block'" id="HomeButton">^</button>
+
+    <img src="/images/hornley-removebg-preview.ico" alt="Logo" onclick="HomeLogo()" class="HomeLogo" id="HomeLogo">
 
     <script src="index.js"></script>
   </body>

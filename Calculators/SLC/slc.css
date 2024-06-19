@@ -1,11 +1,18 @@
-.Table {
+* {
+    margin: 0;
+}
+
+.Container {
     position: relative;
-    top: 5vh;
     display: flex;
     flex-direction: column;
     align-items: center;
     width: 100%;
     height: 95vh;
+}
+
+.Title {
+    text-align: center;
 }
 
 .tableDiv {
@@ -17,7 +24,7 @@ input {
     margin: 5px;
 }
 
-.container {
+.CalculatorGUI {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -27,7 +34,7 @@ input {
 }
 
 table {
-    margin-top: 1em;
+    margin-top: 2rem;
     width: 80%;
     border-spacing: 0;
 }

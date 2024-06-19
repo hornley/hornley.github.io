@@ -343,7 +343,6 @@ function displayTruthTable() {
             let cellText;
             if (row === 0) {
                 cell = document.createElement('th');
-                cell.style.width = proposition.length * 6+"%";
                 cell.style.background = (col % 2 == 0) ? "powderblue" : "chartreuse";
                 cellText = document.createTextNode(proposition);
                 col++;
@@ -422,3 +421,11 @@ function main() {
     maxPage = numberOfRows / maxRows
     displayTruthTable();
 }
+
+function test() {
+    const topNav = document.getElementById("myTopnav")
+    const titleDiv = document.getElementById("Title")
+    titleDiv.style.marginTop = `${topNav.offsetTop + topNav.offsetHeight + 20}px`
+}
+
+test()
