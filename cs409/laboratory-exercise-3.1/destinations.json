@@ -1,0 +1,96 @@
+[
+    {
+        "id": "A",
+        "name": "Police Station",
+        "locations": [
+            {
+                "name": "Police Station 1",
+                "distance": 15
+            },
+            {
+                "name": "Police Station 2",
+                "distance": 30
+            }
+        ]
+    },
+    {
+        "id": "B",
+        "name": "Fast Food",
+        "locations": [
+            {
+                "name": "MCDO",
+                "distance": 15
+            },
+            {
+                "name": "Jollibee",
+                "distance": 30
+            },
+            {
+                "name": "Chowking",
+                "distance": 25
+            }
+        ]
+    },
+    {
+        "id": "C",
+        "name": "Mall",
+        "locations": [
+            {
+                "name": "SM MOA",
+                "distance": 73
+            },
+            {
+                "name": "SM Megamall",
+                "distance": 43
+            },
+            {
+                "name": "Eastwood Mall",
+                "distance": 22
+            },
+            {
+                "name": "Gateway Mall",
+                "distance": 12
+            }
+        ]
+    },
+    {
+        "id": "D",
+        "name": "Hospital",
+        "locations": [
+            {
+                "name": "World Citi",
+                "distance": 5
+            },
+            {
+                "name": "Providence Hospital",
+                "distance": 65
+            },
+            {
+                "name": "Sta. Ana Hospital",
+                "distance": 34
+            }
+        ]
+    },
+    {
+        "id": "E",
+        "name": "School",
+        "locations": [
+            {
+                "name": "TIP QC",
+                "distance": 15
+            },
+            {
+                "name": "STI Cubao",
+                "distance": 30
+            },
+            {
+                "name": "UP Diliman",
+                "distance": 57
+            },
+            {
+                "name": "Mapua",
+                "distance": 73
+            }
+        ]
+    }
+]
