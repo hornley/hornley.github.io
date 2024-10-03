@@ -9,7 +9,7 @@
             },
             {
                 "name": "Police Station 2",
-                "distance": 30
+                "distance": 57
             }
         ]
     },
@@ -18,16 +18,20 @@
         "name": "Fast Food",
         "locations": [
             {
-                "name": "MCDO",
-                "distance": 15
+                "name": "Fast Food 1",
+                "distance": 5
             },
             {
-                "name": "Jollibee",
-                "distance": 30
+                "name": "Fast Food 2",
+                "distance": 46
             },
             {
-                "name": "Chowking",
-                "distance": 25
+                "name": "Fast Food 3",
+                "distance": 86
+            },
+            {
+                "name": "Fast Food 4",
+                "distance": 95
             }
         ]
     },
@@ -36,60 +40,36 @@
         "name": "Mall",
         "locations": [
             {
-                "name": "SM MOA",
-                "distance": 73
+                "name": "Mall 1",
+                "distance": 24
             },
             {
-                "name": "SM Megamall",
-                "distance": 43
-            },
-            {
-                "name": "Eastwood Mall",
-                "distance": 22
-            },
-            {
-                "name": "Gateway Mall",
-                "distance": 12
+                "name": "Mall 2",
+                "distance": 72
             }
         ]
     },
     {
         "id": "D",
-        "name": "Hospital",
+        "name": "Bank",
         "locations": [
             {
-                "name": "World Citi",
-                "distance": 5
+                "name": "Bank 1",
+                "distance": 35
             },
             {
-                "name": "Providence Hospital",
-                "distance": 65
-            },
-            {
-                "name": "Sta. Ana Hospital",
-                "distance": 34
+                "name": "Bank 2",
+                "distance": 85
             }
         ]
     },
     {
         "id": "E",
-        "name": "School",
+        "name": "Church",
         "locations": [
             {
-                "name": "TIP QC",
-                "distance": 15
-            },
-            {
-                "name": "STI Cubao",
-                "distance": 30
-            },
-            {
-                "name": "UP Diliman",
-                "distance": 57
-            },
-            {
-                "name": "Mapua",
-                "distance": 73
+                "name": "Church",
+                "distance": 50
             }
         ]
     }

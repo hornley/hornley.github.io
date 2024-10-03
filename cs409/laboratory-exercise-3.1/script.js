@@ -125,19 +125,31 @@ findButton.addEventListener("click", (e) => {
 
 // calculate nearest establishment
 function calculateNearestEstablishment(location, destinationId, destinations) {
-    let closestDestination;
+    let closestDestinations = [];
+    let distance;
     let destinationCategory;
     destinations.forEach((dest) => {
         if (dest.id === destinationId) {
             destinationCategory = dest.name
-            closestDestination = dest.locations[0]
+            let closestDestination = dest.locations[0]
             dest.locations.forEach((destination) => {
-                if (Math.abs(destination.distance - location) < Math.abs(closestDestination.distance - location)) {
-                    closestDestination = destination
+                if (Math.abs(destination.distance - location) == Math.abs(closestDestination.distance - location)) {
+                    closestDestinations.push(destination)
+                    distance = Math.abs(destination.distance - location)
+                } else if (Math.abs(destination.distance - location) < Math.abs(closestDestination.distance - location)) {
+                    closestDestinations = []
+                    closestDestinations.push(destination)
+                    distance = Math.abs(destination.distance - location)
                 }
             })
         }
     })
-    return result = `The nearest <strong>${destinationCategory}</strong> is <strong>${closestDestination.name}</strong> which is 
-    <strong>${Math.abs(closestDestination.distance - location)} km</strong> away.`;
+    if (closestDestinations.length > 1) {
+        for (let destination of closestDestinations) {
+            const index = closestDestinations.indexOf(destination)
+            closestDestinations[index] = destination.name
+        }
+    }
+    return result = `The nearest <strong>${destinationCategory}</strong> is <strong>${(closestDestinations.length > 1) ? closestDestinations.join(', ') : closestDestinations[0].name}</strong> which is 
+    <strong>${distance} km</strong> away.`;
 }
