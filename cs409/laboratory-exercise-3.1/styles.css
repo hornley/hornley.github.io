@@ -25,22 +25,18 @@ body {
 
 .form {
     border-radius: 1rem;
-    opacity: 0.75;
+    opacity: 1;
     position: relative;
     max-width: 50vw;
     margin: 2rem auto;
     padding: 20px;
-    background: rgba(60,91,191, 0.9);
+    background: rgb(60,91,191);
     border: 1px solid #000;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
     align-items: center;
-    height: 60vh;
-}
-
-.form:hover {
-    opacity: 1;
+    height: fit-content;
 }
 
 .target {
@@ -275,6 +271,12 @@ button:not(.close-result) {
 }
 
 
+.location-label {
+    font-size: 1.2rem;
+    color: aquamarine;
+}
+
+
 @media screen and (max-width: 900px) {
     .select-destination-container {
         flex-direction: column;
@@ -288,5 +290,50 @@ button:not(.close-result) {
 
     .form {
         height: 90vh;
+    }
+    .result {
+        width: 100%;
+    }
+}
+
+
+@media screen and (max-width: 720px) {
+    .form {
+        max-width: 60vw;
+        height: fit-content;
+    }
+    .location-label {
+        font-size: 1rem;
+    }
+    .option-label {
+        font-size: 1rem;
+    }
+    .target {
+        margin-bottom: 0.5rem;
+    }
+    .result {
+        width: 100%;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .title {
+        font-size: 1rem;
+    }
+    .form {
+        max-width: 90vw;
+        height: fit-content;
+    }
+    .location-label {
+        font-size: 1rem;
+    }
+    .option-label {
+        font-size: 1rem;
+    }
+    .target {
+        margin-bottom: 0.5rem;
+    }
+    .result {
+        width: 100%;
     }
 }
