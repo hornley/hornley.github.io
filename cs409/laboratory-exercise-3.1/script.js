@@ -15,7 +15,6 @@ const locationInput = document.getElementById("location");
 const bgMUSIC = document.getElementById('bgMUSIC')
 bgMUSIC.currentTime = 15
 bgMUSIC.volume = 1
-bgMUSIC.play()
 
 // load destinations from JSON file
 fetch("destinations.json")

@@ -8,14 +8,15 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <audio id="bgMUSIC" loop>
+    <audio id="bgMUSIC" loop autoplay>
         <source src="bg.mp3" type="audio/mp3">
     </audio>
 
     <canvas class="canvas" id="canvas"></canvas>
-    <button class="show-map-button" id="show-map-button" onclick="showMap()">Map</button>
 
     <div class="form" id="form">
+        <button class="show-map-button" id="show-map-button" onclick="showMap()">Map</button>
+        
         <h1 class="target title" style="text-align: center;">Find the Nearest Establishment</h1>
         
         <div class="target" style="display: flex; align-items: center; flex-direction: column;">
