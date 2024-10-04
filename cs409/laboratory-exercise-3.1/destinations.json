@@ -2,6 +2,7 @@
     {
         "id": "A",
         "name": "Police Station",
+        "color": "blue",
         "locations": [
             {
                 "name": "Police Station 1",
@@ -16,6 +17,7 @@
     {
         "id": "B",
         "name": "Fast Food",
+        "color": "red",
         "locations": [
             {
                 "name": "Fast Food 1",
@@ -38,6 +40,7 @@
     {
         "id": "C",
         "name": "Mall",
+        "color": "white",
         "locations": [
             {
                 "name": "Mall 1",
@@ -52,6 +55,7 @@
     {
         "id": "D",
         "name": "Bank",
+        "color": "green",
         "locations": [
             {
                 "name": "Bank 1",
@@ -66,6 +70,7 @@
     {
         "id": "E",
         "name": "Church",
+        "color": "gray",
         "locations": [
             {
                 "name": "Church",

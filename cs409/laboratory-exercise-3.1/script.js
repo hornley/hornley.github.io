@@ -153,3 +153,79 @@ function calculateNearestEstablishment(location, destinationId, destinations) {
     return result = `The nearest <strong>${destinationCategory}</strong> is <strong>${(closestDestinations.length > 1) ? closestDestinations.join(', ') : closestDestinations[0].name}</strong> which is 
     <strong>${distance} km</strong> away.`;
 }
+
+// CANVA SCRIPT
+
+const canvas = document.getElementById("canvas")
+canvas.width = canvas.offsetWidth
+canvas.height = canvas.offsetHeight
+const canvas_size = {
+    width: canvas.width,
+    height: canvas.height
+}
+const ctx = canvas.getContext('2d')
+let destinations = JSON.parse(localStorage.getItem("destinations"));
+
+function showMap() {
+    canvas.style.visibility = (canvas.style.visibility === 'visible') ? 'hidden' : 'visible'
+    document.querySelectorAll('div.form').forEach((element) => {
+        element.style.visibility = (canvas.style.visibility === 'visible') ? 'hidden' : 'visible'
+    })
+
+    if (canvas.style.visibility === 'visible') {
+        loop()
+    }
+}
+
+function loop() {
+    ctx.clearRect(0, 0, canvas_size.width, canvas_size.height)
+
+    requestAnimationFrame(loop)
+    
+    const grad = ctx.createLinearGradient(0, 0, canvas_size.width, 0)
+    grad.addColorStop(0, '#b8b3d7')
+    grad.addColorStop(0.18, '#87a4d9')
+    grad.addColorStop(0.36, '#9083d2')
+    grad.addColorStop(0.58, '#587fe6')
+    grad.addColorStop(0.73, '#496fb8')
+    grad.addColorStop(0.92, '#3674ad')
+    grad.addColorStop(1, '#583eb5')
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, canvas_size.width, canvas_size.height);
+
+    ctx.save()
+    ctx.font = '64px times-new-roman'
+    ctx.textAlign = 'center'
+    ctx.fillStyle = 'white'
+    ctx.fillText("Map", canvas_size.width / 2 - 50, 100, 100);
+    ctx.restore()
+    const d = []
+    destinations.forEach((dest) => {
+        dest.locations.forEach((destination) => {
+            d.push({
+                name: destination.name,
+                color: dest.color,
+                distance: destination.distance
+            })
+        })
+    })
+    let index = 0;
+    d.sort((a, b) => a.distance - b.distance)
+    d.forEach((destination) => {
+        const position = {
+            x: destination.distance * 15,
+            y: canvas_size.height / 2
+        }
+        ctx.save()
+        ctx.beginPath()
+        ctx.fillStyle = destination.color
+        ctx.arc(position.x, position.y, 50, 0, 2*Math.PI)
+        ctx.stroke()
+        ctx.fill()
+        ctx.font = '64px times-new-roman'
+        ctx.textAlign = 'center'
+        ctx.fillText(destination.name, position.x, position.y + ((index % 2 == 0) ? 100 : -100), 150);
+        ctx.restore()
+        index += 1
+    })
+}
