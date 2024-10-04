@@ -16,10 +16,6 @@ const bgMUSIC = document.getElementById('bgMUSIC')
 bgMUSIC.currentTime = 15
 bgMUSIC.volume = 1
 
-window.onload = function() {
-    bgMUSIC.play()
-}
-
 // load destinations from JSON file
 fetch("destinations.json")
     .then((response) => response.json())
@@ -82,6 +78,10 @@ destinationsInput.addEventListener("change", function () {
     destinationListOption2.parentElement.style.opacity =
         destinationsInput.value.trim() !== "" ? 0.2 : 1;
 });
+
+locationInput.addEventListener('click', function() {
+    bgMUSIC.play()
+})
 
 locationInput.addEventListener("change", function () {
     const value = locationInput.value.trim();
@@ -223,7 +223,7 @@ function loop() {
     let scale = window.devicePixelRatio - 1
     d.forEach((destination) => {
         const position = {
-            x: destination.distance * 2 * (18 / scale),
+            x: destination.distance * (18 / scale),
             y: canvas_size.height / 2
         }
         ctx.save()
