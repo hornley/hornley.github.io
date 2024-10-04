@@ -16,6 +16,10 @@ const bgMUSIC = document.getElementById('bgMUSIC')
 bgMUSIC.currentTime = 15
 bgMUSIC.volume = 1
 
+window.onload = function() {
+    bgMUSIC.play()
+}
+
 // load destinations from JSON file
 fetch("destinations.json")
     .then((response) => response.json())
@@ -175,6 +179,7 @@ function showMap() {
     document.querySelectorAll('div.form').forEach((element) => {
         element.style.visibility = (canvas.style.visibility === 'visible') ? 'hidden' : 'visible'
     })
+    document.querySelector('.within-map').style.visibility = (canvas.style.visibility === 'visible') ? 'visible' : 'hidden'
 
     if (canvas.style.visibility === 'visible') {
         loop()
@@ -198,10 +203,10 @@ function loop() {
     ctx.fillRect(0, 0, canvas_size.width, canvas_size.height);
 
     ctx.save()
-    ctx.font = '64px times-new-roman'
+    ctx.font = `${64 / window.devicePixelRatio * 2}px times-new-roman`
     ctx.textAlign = 'center'
     ctx.fillStyle = 'white'
-    ctx.fillText("Map", canvas_size.width / 2 - 50, 100, 100);
+    ctx.fillText("Map", canvas_size.width / 2 - 50 / window.devicePixelRatio, 100, 100);
     ctx.restore()
     const d = []
     destinations.forEach((dest) => {
@@ -215,20 +220,21 @@ function loop() {
     })
     let index = 0;
     d.sort((a, b) => a.distance - b.distance)
+    let scale = window.devicePixelRatio - 1
     d.forEach((destination) => {
         const position = {
-            x: destination.distance * 15,
+            x: destination.distance * 2 * (18 / scale),
             y: canvas_size.height / 2
         }
         ctx.save()
         ctx.beginPath()
         ctx.fillStyle = destination.color
-        ctx.arc(position.x, position.y, 50, 0, 2*Math.PI)
+        ctx.arc(position.x, position.y, 50 / scale, 0, 2*Math.PI)
         ctx.stroke()
         ctx.fill()
-        ctx.font = '64px times-new-roman'
+        ctx.font = `${64 / scale}px times-new-roman`
         ctx.textAlign = 'center'
-        ctx.fillText(destination.name, position.x, position.y + ((index % 2 == 0) ? 100 : -100), 150);
+        ctx.fillText(destination.name, position.x, position.y + (((index % 2 == 0) ? 100 : -100) / scale), 150);
         ctx.restore()
         index += 1
     })

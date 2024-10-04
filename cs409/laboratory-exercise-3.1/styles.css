@@ -289,12 +289,20 @@ button:not(.close-result) {
     z-index: 0;
 }
 
-.show-map-button {
+.show-map-button:not(.within-map) {
     position: absolute;
     bottom: 0;
     left: 0;
     margin: 1rem;
     font-size: 0.5rem;
+}
+
+.within-map {
+    visibility: hidden;
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin: 1rem;
 }
 
 
@@ -356,5 +364,8 @@ button:not(.close-result) {
     }
     .result {
         width: 100%;
+    }
+    .show-map-button {
+        visibility: hidden;
     }
 }
