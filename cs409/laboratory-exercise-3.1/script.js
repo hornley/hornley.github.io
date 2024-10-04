@@ -79,7 +79,7 @@ destinationsInput.addEventListener("change", function () {
         destinationsInput.value.trim() !== "" ? 0.2 : 1;
 });
 
-locationInput.addEventListener('click', function() {
+document.addEventListener('click', function() {
     bgMUSIC.play()
 })
 
