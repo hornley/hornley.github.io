@@ -12,6 +12,11 @@ const closeResultButton = document.getElementById('close-result');
 const destinationsInput = document.getElementById("destinations-input");
 const locationInput = document.getElementById("location");
 
+const bgMUSIC = document.getElementById('bgMUSIC')
+bgMUSIC.currentTime = 15
+bgMUSIC.volume = 1
+bgMUSIC.play()
+
 // load destinations from JSON file
 fetch("destinations.json")
     .then((response) => response.json())
