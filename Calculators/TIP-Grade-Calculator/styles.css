@@ -1,0 +1,167 @@
+body, html {
+    width: 100vw;
+    height: auto;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    height: 100vh;
+    background-color: powderblue;
+}
+
+.table {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 60vw;
+    height: 90vh;
+    background-color: white;
+    border-radius: 20px;
+    border: 2px solid black;
+}
+
+.topnav a {
+    cursor: pointer;
+    padding: 0 .75rem;
+    font-size: 2rem;
+    border-right: 1px solid black;
+}
+
+.topnav a#active {
+    color: white;
+}
+
+.topnav {
+    background-color: gray;
+    width: 100%;
+    border-bottom: 1px solid;
+    border-radius: 20px 20px 0 0;
+}
+
+.grades {
+    width: 100%;
+    height: 100%;
+    border-radius: 0 0 20px 20px;
+}
+
+.class-standing .header {
+    width: 100%;
+    background-color: yellow;
+    display: grid;
+    grid-template-columns: auto 1.5rem 100px;
+    gap: 35%;
+}
+
+.header {
+    width: 100%;
+    background-color: yellow;
+    display: grid;
+    align-items: center;
+    align-content: space-evenly;
+    grid-template-columns: auto 100px;
+    gap: 30%;
+    border-bottom: 1px solid black;
+    input {
+        height: 80%;
+    }
+}
+
+.major-exam {
+    border-top: 1px solid black;
+}
+
+.header-title {
+    margin-left: 5px;
+}
+
+.class-standing {
+    height: 75%;
+}
+
+.cs-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    height: 90.63793443%;
+    overflow-y: scroll;
+}
+/* 9.362065567 */
+.cs-factor {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 95%;
+}
+
+.cs-header {
+    width: 100%;
+    background-color:chartreuse;
+    display: grid;
+    align-items: center;
+    align-content: space-evenly;
+    grid-template-columns: 100px 25px 100px auto 1.5rem 3rem 1.5rem auto 100px;
+    border: 1px solid black;
+
+    input {
+        height: 60%;
+        margin: 0 5px;
+    }
+}
+
+.cs-factor-container {
+    width: 95%;
+    background-color: rgb(211, 245, 58);
+    display: grid;
+    align-items: center;
+    align-content: space-evenly;
+    grid-template-columns: 100px auto 1.5rem auto 100px;
+    border: 1px solid black;
+
+    input {
+        height: 60%;
+        margin: 0 5px;
+    }
+
+}
+
+img {
+    margin: 1em;
+    cursor: pointer;
+}
+
+@media screen and (max-width: 900px) {
+}
+
+@media screen and (max-width: 720px) {
+    .topnav a {
+        font-size: 1.4rem;
+    }
+
+    .table {
+        width: 80vw;
+    }
+
+    .class-standing .header {
+        grid-template-columns: 110px 1rem 100px;
+        gap: 16.5%;
+
+        h3 {
+            font-size: 1rem;
+        }
+    }
+
+    .cs-header {
+        grid-template-columns: 100px 12px 50px 1px 1.5rem 1rem 1.5rem auto 75px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+}

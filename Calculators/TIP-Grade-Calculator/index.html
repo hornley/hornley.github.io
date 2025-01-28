@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>TIP Grade Calculator</title>
+</head>
+<body>
+    <div class="container">
+        <div class="table">
+            <div class="topnav" id="myTopnav">
+              <a id="active" onclick="gradePeriod(this)">Prelim</a>
+              <a onclick="gradePeriod(this)">Midterm</a>
+              <a onclick="gradePeriod(this)">Final</a>
+            </div>
+            <div class="grades">
+                <div class="class-standing">
+                    <div class="header">
+                        <h3 class="header-title">Class Standing</h3>
+                        <img class="add-category-button" onclick="addCategory()" src="add_category_button.png">
+                        <input type="text" id="class-standing-grade">
+                    </div>
+                    <div class="cs-container" id="cs-container">
+                    </div>
+                </div>
+                <div class="major-exam">
+                    <div class="header">
+                        <h3 class="header-title">Exam</h3>
+                        <input id="major-exam-grade" type="text" id="class-standing-grade">
+                    </div>
+
+                </div>
+                <div class="grade">
+                    <div class="header">
+                        <h3 class="header-title">Grade</h3>
+                        <h3 id="grade">00.00</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
