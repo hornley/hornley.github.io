@@ -80,7 +80,7 @@ function updateGrade() {
         else if (currentPeriod === "Midterm")
             grades[currentPeriod]["Grade"] = round(1/3*(grades["Prelim"]["Grade"]) + 2/3*(CS/2 + ME/2))
         else
-            grades[currentPeriod]["Grade"] = round(1/3*(grades["Midterm"]["Grade"]) + 2/3*(CS/2 + ME/2))
+            grades[currentPeriod]["Grade"] = Math.round(1/3*(grades["Midterm"]["Grade"]) + 2/3*(CS/2 + ME/2))
 
         gradeText.innerText = grades[currentPeriod]["Grade"]
     }
