@@ -1,0 +1,81 @@
+[
+    {
+        "id": "A",
+        "name": "Police Station",
+        "color": "blue",
+        "locations": [
+            {
+                "name": "Police Station 1",
+                "distance": 15
+            },
+            {
+                "name": "Police Station 2",
+                "distance": 57
+            }
+        ]
+    },
+    {
+        "id": "B",
+        "name": "Fast Food",
+        "color": "red",
+        "locations": [
+            {
+                "name": "Fast Food 1",
+                "distance": 5
+            },
+            {
+                "name": "Fast Food 2",
+                "distance": 46
+            },
+            {
+                "name": "Fast Food 3",
+                "distance": 86
+            },
+            {
+                "name": "Fast Food 4",
+                "distance": 95
+            }
+        ]
+    },
+    {
+        "id": "C",
+        "name": "Mall",
+        "color": "white",
+        "locations": [
+            {
+                "name": "Mall 1",
+                "distance": 24
+            },
+            {
+                "name": "Mall 2",
+                "distance": 72
+            }
+        ]
+    },
+    {
+        "id": "D",
+        "name": "Bank",
+        "color": "green",
+        "locations": [
+            {
+                "name": "Bank 1",
+                "distance": 35
+            },
+            {
+                "name": "Bank 2",
+                "distance": 85
+            }
+        ]
+    },
+    {
+        "id": "E",
+        "name": "Church",
+        "color": "gray",
+        "locations": [
+            {
+                "name": "Church",
+                "distance": 50
+            }
+        ]
+    }
+]

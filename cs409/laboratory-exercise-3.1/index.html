@@ -1,0 +1,63 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laboratory Exercise 3.1</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <audio id="bgMUSIC" loop>
+        <source src="bg.mp3" type="audio/mp3">
+    </audio>
+
+    <canvas class="canvas" id="canvas"></canvas>
+    <button class="show-map-button within-map" id="show-map-button" onclick="showMap()">Map</button>
+
+    <div class="form" id="form">
+        <button class="show-map-button within-form" id="show-map-button" onclick="showMap()">Map</button>
+
+        <h1 class="target title" style="text-align: center;">Find the Nearest Establishment</h1>
+        
+        <div class="target" style="display: flex; align-items: center; flex-direction: column;">
+            <label for="location" class="location-label">Enter current location (in km)</label>
+            <input type="text" class="location" id="location" placeholder="ex. 30km">
+        </div>
+
+        <div class="select-destination-container target" id="select-destination-container">
+            <div class="select-destination option1">
+                <label for="destinations-option1" class="option-label">Choose a destination:</label>
+                <ul id="destinations-option1">
+                </ul>
+                <input disabled="disabled" type="text" class="destinations-input" id="destinations-input" placeholder="Type the letter">
+            </div>
+
+            <div class="select-destination option2">
+                <label for="destinations-option2" class="option-label">Select a destination:</label>
+                <ul id="destinations-option2">
+                </ul>
+            </div>
+        </div>
+
+        <button class="find target" id="find" disabled="disabled">Find Nearest Establishment</button>
+        
+        <div class="result target" id="result">
+            <div class="details-modal">
+                <div class="details-modal-title">
+                  <h1>Result</h1>
+                </div>
+                <div class="details-modal-content">
+                  <p id="result-p">
+                  </p>
+                </div>
+                <div class="details-modal-close">
+                    <button class="close-result" id="close-result">Okay</button>
+                </div>
+              </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
