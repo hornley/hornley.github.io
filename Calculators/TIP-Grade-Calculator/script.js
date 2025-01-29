@@ -54,8 +54,10 @@ function updateGrade() {
                 }
             })
 
-            grades[currentPeriod]["Class Standing"][nodeName]["Percentage"] = round(parseFloat(node.firstChild.childNodes[2].value))
-            grades[currentPeriod]["Class Standing"][nodeName]["Grade"] = round(grade / (Object.keys(grades[currentPeriod]["Class Standing"][nodeName]).length - 2))
+            grades["Prelim"]["Class Standing"][nodeName]["Percentage"] = round(parseFloat(node.firstChild.childNodes[2].value))
+            grades["Midterm"]["Class Standing"][nodeName]["Percentage"] = round(parseFloat(node.firstChild.childNodes[2].value))
+            grades["Final"]["Class Standing"][nodeName]["Percentage"] = round(parseFloat(node.firstChild.childNodes[2].value))
+            grades[currentPeriod]["Class Standing"][nodeName]["Grade"] = round(grade / (Object.keys(grades[currentPeriod]["Class Standing"][nodeName]).length - 2)) || 0
             node.firstChild.lastChild.value = grades[currentPeriod]["Class Standing"][nodeName]["Grade"]
             total_cs_percentage += parseFloat(node.firstChild.childNodes[2].value) || 0
         }
@@ -67,7 +69,7 @@ function updateGrade() {
                 grades[currentPeriod]["Class Standing"]["Grade"] += grades[currentPeriod]["Class Standing"][factor]["Grade"] * grades[currentPeriod]["Class Standing"][factor]["Percentage"] / 100
             }
         })
-        grades[currentPeriod]["Class Standing"]["Grade"] = round(grades[currentPeriod]["Class Standing"]["Grade"])
+        grades[currentPeriod]["Class Standing"]["Grade"] = round(grades[currentPeriod]["Class Standing"]["Grade"]) || 0
         classStandingGrade.value = grades[currentPeriod]["Class Standing"]["Grade"]
 
         let CS = round(parseFloat(classStandingGrade.value)) || 0
@@ -82,7 +84,7 @@ function updateGrade() {
         else
             grades[currentPeriod]["Grade"] = Math.round(1/3*(grades["Midterm"]["Grade"]) + 2/3*(CS/2 + ME/2))
 
-        gradeText.innerText = grades[currentPeriod]["Grade"]
+        gradeText.innerText = grades[currentPeriod]["Grade"] + " (" + gradeEquivalent(grades[currentPeriod]["Grade"]).toFixed(2) + ")"
     }
 }
 
@@ -194,7 +196,6 @@ function gradePeriod(clickedNode) {
     topnavDiv.childNodes.forEach((node) => {
         node.id = (node === clickedNode) ? "active" : "";
     })
-    grades[currentPeriod]["innerHTML"] = CSContainer.innerHTML
     currentPeriod = clickedNode.innerHTML
     CSContainer.innerHTML = ''
     majorExamGrade.value = 0
@@ -319,4 +320,31 @@ function deleteSubCategory(node) {
 
 function round(num) {
     return Math.round((num + Number.EPSILON) * 100)/100
+}
+
+function gradeEquivalent(grade) {
+    let equivalentGrade;
+
+    if (94 <= grade && grade <= 100)
+        equivalentGrade = 1.00;
+    else if (88.5 <= grade && grade < 94)
+        equivalentGrade = 1.25;
+    else if (83 <= grade && grade < 88.5)
+        equivalentGrade = 1.50;
+    else if (77.5 <= grade && grade < 83)
+        equivalentGrade = 1.75;
+    else if (72 <= grade && grade < 77.5)
+        equivalentGrade = 2.00;
+    else if (65.5 <= grade && grade < 72)
+        equivalentGrade = 2.25;
+    else if (61 <= grade && grade < 65.5)
+        equivalentGrade = 2.50;
+    else if (55.5 <= grade && grade < 61)
+        equivalentGrade = 2.75;
+    else if (50 <= grade && grade < 55.5)
+        equivalentGrade = 3.00;
+    else if (0 <= grade && grade < 50)
+        equivalentGrade = 5.00;
+    
+    return equivalentGrade
 }
